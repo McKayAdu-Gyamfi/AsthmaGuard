@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ const RiskAlert = () => {
   const minutes = Math.floor((timeLeft % 3600) / 60);
   const seconds = timeLeft % 60;
 
-  const pad = (n: number) => n.toString().padStart(2, '0');
+  const pad = (n) => n.toString().padStart(2, '0');
 
   return (
     <div className="min-h-screen bg-[#F6F8F9] flex flex-col relative pb-24">

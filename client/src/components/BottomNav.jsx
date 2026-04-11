@@ -3,17 +3,11 @@ import { Home, LineChart, Users, User, Map, History, Bell } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
-export type NavItemType = 'Home' | 'Insights' | 'Plan' | 'Map' | 'Profile' | 'Alerts' | 'History' | 'Community';
-
-interface BottomNavProps {
-  items: NavItemType[];
-}
-
-export const BottomNav: React.FC<BottomNavProps> = ({ items }) => {
+export const BottomNav = ({ items }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const getIcon = (type: NavItemType) => {
+  const getIcon = (type) => {
     switch (type) {
       case 'Home': return Home;
       case 'Insights': return LineChart;
@@ -27,7 +21,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ items }) => {
     }
   };
 
-  const getPath = (type: NavItemType) => {
+  const getPath = (type) => {
     switch (type) {
       case 'Home': return '/';
       case 'Insights': return '/insights';

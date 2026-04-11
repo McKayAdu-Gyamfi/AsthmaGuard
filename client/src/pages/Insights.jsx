@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ArrowLeft, Bell, MapPin, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@/components/CircularProgress';

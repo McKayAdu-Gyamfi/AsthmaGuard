@@ -1,16 +1,6 @@
 import React from 'react';
 
-interface CircularProgressProps {
-  value: number;
-  text: string;
-  subtext: string;
-  size?: number;
-  strokeWidth?: number;
-  color?: string;
-  backgroundColor?: string;
-}
-
-export const CircularProgress: React.FC<CircularProgressProps> = ({
+export const CircularProgress = ({
   value,
   text,
   subtext,
