@@ -1,4 +1,4 @@
-# 🫁 Asthma Support System
+# 🫁 AsthmaGuard
 
 A web-based platform that monitors real-time environmental conditions, predicts asthma attack risk, and guides bystanders through emergencies using an AI-powered chatbot.
 
