@@ -1,18 +1,18 @@
-const { assessRisk, computeRuleBasedRisk } = require("../../riskEngine");
+import { assessRisk, computeRuleBasedRisk }from "../../server/src/services/riskEngineService.js";
 
 describe("Risk Engine Tests", () => {
 
   // 1. Good conditions → LOW risk
-  test("good conditions return LOW risk", () => {
-    const result = assessRisk({
-      aqi: 30,
-      pm25: 5,
-      humidity: 40,
-      temperatureC: 22
-    });
-
-    expect(result.overallRisk).toBe("LOW");
+test("good conditions return LOW risk", () => {
+  const result = assessRisk({
+    aqi: 10,           // Very clean air
+    pm25: 1,           // Very low dust
+    humidity: 40,      // Perfect humidity
+    temperatureC: 20   // Perfect room temperature
   });
+
+  expect(result.overallRisk).toBe("LOW");
+});
 
   // 2. Very high AQI → EMERGENCY (CRITICAL in spec)
   test("very high AQI returns EMERGENCY risk", () => {
