@@ -16,8 +16,10 @@
 import express from "express";
 import { assessRisk, updateWeights, RISK_LEVEL } from "../services/riskEngineService.js";
 import supabase from "../config/supabase.js";
+import { optionalAuth } from "../middlewares/optionalAuth.js";
 const router  = express.Router();
 
+router.use(optionalAuth);
 
 // ─── GET /api/risk ───────────────────
 router.get("/", async (req, res) => {
@@ -30,10 +32,12 @@ router.get("/", async (req, res) => {
     };
 
     const result = assessRisk(input);
+    const userId = req.user ? req.user.id : null;
 
     // SAVE TO SUPABASE
     const{error}=await supabase.from("risk_readings").insert([
       {
+        user_id: userId,
         location: "Accra, Ghana",
         aqi: input.aqi,
         pm25: input.pm25,
@@ -91,10 +95,12 @@ if (errors.length > 0) {
 }
 
   const result = assessRisk({ aqi, pm25, humidity, temperatureC });
+  const userId = req.user ? req.user.id : null;
 
 // 🔥 SAVE TO SUPABASE
   const{error}= await supabase.from("risk_readings").insert([
      {
+    user_id: userId,
     location: "Accra, Ghana",
     aqi,
     pm25,

@@ -3,8 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { auth } from "./src/config/auth.js";
 import { toNodeHandler } from "better-auth/node";
-import environmentRoutes from "./src/routes/environmentRoutes.js";
-import riskRoutes from "./src/routes/risk.js";
+import apiRoutes from "./src/routes/index.js";
+import { errorHandler } from "./src/middlewares/errorHandler.js";
 
 dotenv.config();
 
@@ -21,14 +21,16 @@ app.get("/", (req, res) => {
   });
 });
 
-// Mount Better Auth endpoints
+// Better Auth endpoints
 app.use("/api/auth", (req, res) => {
   return toNodeHandler(auth)(req, res);
 });
 
-// API Routes
-app.use("/api/v1/environment", environmentRoutes);
-app.use("/api/risk", riskRoutes);
+// Centralized API Routes
+app.use("/api", apiRoutes);
+
+// Global Error Handler
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 4000;
 

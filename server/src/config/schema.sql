@@ -47,6 +47,7 @@ CREATE TABLE "verification" (
 
 CREATE TABLE risk_readings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT REFERENCES "user"(id),
   location TEXT NOT NULL,
   latitude DECIMAL,
   longitude DECIMAL,
@@ -77,5 +78,42 @@ CREATE TABLE user_profiles (
   longitude DECIMAL DEFAULT -0.1870,
   notify_on_high BOOLEAN DEFAULT TRUE,
   notify_on_medium BOOLEAN DEFAULT FALSE,
+  emergency_contacts JSONB DEFAULT '[]',
   created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE emergencies (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT REFERENCES "user"(id),
+  location TEXT NOT NULL,
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'resolved')),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Health Tracking Tables
+
+CREATE TABLE symptoms (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT REFERENCES "user"(id) NOT NULL,
+  type TEXT NOT NULL,
+  severity INTEGER CHECK (severity BETWEEN 1 AND 5),
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE medications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id TEXT REFERENCES "user"(id) NOT NULL,
+  name TEXT NOT NULL,
+  dosage TEXT,
+  type TEXT CHECK (type IN ('Controller', 'Rescue')),
+  frequency TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE medication_logs (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  medication_id UUID REFERENCES medications(id) ON DELETE CASCADE,
+  user_id TEXT REFERENCES "user"(id) NOT NULL,
+  taken_at TIMESTAMP DEFAULT NOW()
 );
