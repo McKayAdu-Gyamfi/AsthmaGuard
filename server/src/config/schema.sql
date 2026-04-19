@@ -55,7 +55,7 @@ CREATE TABLE risk_readings (
   pm10 DECIMAL,
   humidity INTEGER,
   temperature DECIMAL,
-  risk_level TEXT CHECK (risk_level IN ('LOW', 'MEDIUM', 'HIGH')),
+  risk_level TEXT CHECK (risk_level IN ('LOW', 'MODERATE', 'HIGH', 'EMERGENCY')),
   risk_score INTEGER,
   recorded_at TIMESTAMP DEFAULT NOW()
 );

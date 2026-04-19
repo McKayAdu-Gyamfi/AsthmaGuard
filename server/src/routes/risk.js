@@ -14,8 +14,8 @@
  */
 
 import express from "express";
-import { assessRisk, updateWeights, RISK_LEVEL } from "../riskEngine.js";
-import supabase from "../supabaseService.js";
+import { assessRisk, updateWeights, RISK_LEVEL } from "../services/riskEngineService.js";
+import supabase from "../config/supabase.js";
 const router  = express.Router();
 
 
