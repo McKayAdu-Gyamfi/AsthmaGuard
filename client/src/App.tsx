@@ -18,7 +18,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/astma-attack" element={<AsthmaAttackGuide />} />
+        <Route path="/asthma-attack" element={<AsthmaAttackGuide />} />
         
         {/* Wrapped routes */}
         <Route path="/" element={<AppLayout><HomeDashboard /></AppLayout>} />
