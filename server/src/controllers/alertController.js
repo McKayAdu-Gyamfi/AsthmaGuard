@@ -70,10 +70,37 @@ export const deleteAlert = async (req, res, next) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, error: "Alert not found or unauthorized" });
     }
-
+    
     res.json({
       success: true,
       message: "Alert dismissed",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Mark an alert as read
+ * PUT /api/v1/alerts/:id/read
+ */
+export const markAlertRead = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const result = await pool.query(
+      `UPDATE alerts SET is_read = TRUE WHERE id = $1 AND user_id = $2 RETURNING *`,
+      [id, userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Alert not found or unauthorized" });
+    }
+
+    res.json({
+      success: true,
+      data: result.rows[0],
     });
   } catch (err) {
     next(err);

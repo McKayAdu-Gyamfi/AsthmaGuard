@@ -68,6 +68,7 @@ CREATE TABLE alerts (
   risk_level TEXT,
   aqi INTEGER,
   message TEXT,
+  is_read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT NOW()
 );
 

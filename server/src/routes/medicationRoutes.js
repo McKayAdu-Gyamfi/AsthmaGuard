@@ -8,7 +8,7 @@ router.use(requireAuth);
 
 router.post("/", addMedication);
 router.get("/", getMedications);
-router.post("/:id/log", logMedicationUse);
+router.post("/:id/taken", logMedicationUse);
 router.delete("/:id", deleteMedication);
 
 export default router;

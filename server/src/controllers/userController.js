@@ -32,6 +32,67 @@ export const getMe = async (req, res, next) => {
 };
 
 /**
+ * Get user's emergency contacts
+ * GET /api/v1/users/emergency-contacts
+ */
+export const getEmergencyContacts = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const result = await pool.query(
+      `SELECT emergency_contacts FROM user_profiles WHERE id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Profile not found" });
+    }
+
+    res.json({
+      success: true,
+      data: result.rows[0].emergency_contacts || [],
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
+ * Delete an emergency contact by email
+ * DELETE /api/v1/users/emergency-contacts/:email
+ */
+export const deleteEmergencyContact = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const { email } = req.params;
+
+    const result = await pool.query(
+      `SELECT emergency_contacts FROM user_profiles WHERE id = $1`,
+      [userId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: "Profile not found" });
+    }
+
+    let contacts = result.rows[0].emergency_contacts || [];
+    contacts = contacts.filter(contact => contact.email !== email);
+
+    const updateResult = await pool.query(
+      `UPDATE user_profiles SET emergency_contacts = $1, updated_at = NOW() WHERE id = $2 RETURNING emergency_contacts`,
+      [JSON.stringify(contacts), userId]
+    );
+
+    res.json({
+      success: true,
+      data: updateResult.rows[0].emergency_contacts,
+      message: "Contact deleted successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Update current user profile
  * PUT /api/v1/users/me
  */
