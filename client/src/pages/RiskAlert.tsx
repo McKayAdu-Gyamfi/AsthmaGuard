@@ -3,7 +3,7 @@ import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { BottomNav } from '@/components/BottomNav';
+
 
 const RiskAlert = () => {
   const navigate = useNavigate();
@@ -125,7 +125,6 @@ const RiskAlert = () => {
 
       </div>
 
-      <BottomNav items={['Home', 'Alerts', 'History', 'Profile']} />
     </div>
   );
 };

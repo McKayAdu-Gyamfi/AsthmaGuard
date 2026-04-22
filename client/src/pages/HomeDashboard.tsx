@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CircularProgress } from '@/components/CircularProgress';
-import { BottomNav } from '@/components/BottomNav';
+
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
@@ -140,7 +140,6 @@ const HomeDashboard = () => {
         </Card>
 
       </div>
-      <BottomNav items={['Home', 'Insights', 'Community', 'Profile']} />
     </div>
   );
 };

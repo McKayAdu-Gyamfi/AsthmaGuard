@@ -111,9 +111,19 @@ const Login = () => {
           Continue with Google
         </Button>
 
-        <p className="mt-8 text-[15px] text-slate-500">
-          New to the app? <button className="font-semibold text-[#2F5E60] hover:underline">Create Account</button>
+        <p className="mt-8 mb-4 text-[15px] text-slate-500">
+          New to the app? <button onClick={() => navigate('/signup')} className="font-semibold text-[#2F5E60] hover:underline">Create Account</button>
         </p>
+      </div>
+
+      {/* Footer Area */}
+      <div className="absolute bottom-0 left-0 right-0 bg-[#E8EFF0] py-4 text-center text-[10px] sm:text-[11px] text-slate-500 mt-auto border-t border-[#D2DFE0]">
+        <div className="flex justify-center gap-4 mb-2 font-medium">
+          <a href="#" className="hover:text-slate-800">Privacy Policy</a>
+          <a href="#" className="hover:text-slate-800">Terms of Service</a>
+          <a href="#" className="hover:text-slate-800">Contact Support</a>
+        </div>
+        <p>© 2024 AsthmaCare Respiratory Systems. All rights reserved.</p>
       </div>
     </div>
   );
