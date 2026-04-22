@@ -7,6 +7,7 @@ import symptomRoutes from "./symptomRoutes.js";
 import medicationRoutes from "./medicationRoutes.js";
 import historyRoutes from "./historyRoutes.js";
 import alertRoutes from "./alertRoutes.js";
+import chatRoutes from "./chatRoutes.js";
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.use("/v1/symptoms", symptomRoutes);
 router.use("/v1/medications", medicationRoutes);
 router.use("/v1/history", historyRoutes);
 router.use("/v1/alerts", alertRoutes);
+router.use("/v1/chat", chatRoutes);
 
 
 

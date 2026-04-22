@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/SMarco2310/Software-engineering-final-project#readme",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@supabase/supabase-js": "^2.103.3",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",

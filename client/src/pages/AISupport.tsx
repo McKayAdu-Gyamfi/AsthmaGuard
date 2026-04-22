@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Paperclip, Sparkles, Mic, Send, Zap } from 'lucide-react';
+import { ArrowLeft, Paperclip, Sparkles, Mic, Send, Zap, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type Message = {
@@ -15,12 +15,13 @@ const AISupport = () => {
     {
       id: '1',
       sender: 'ai',
-      text: "Hello! I'm AsthmaGuard AI. I'm here 24/7 to support you. How are you feeling today? If you're in distress, tap \"EMERGENCY MODE\" above.",
+      text: "Hello! I'm AsthmaGuard AI, your personal Asthma Support Doctor. I'm here 24/7 to help you manage your asthma. How are you feeling today? If you're in distress, tap \"EMERGENCY MODE\" above.",
       time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
     }
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -31,24 +32,42 @@ const AISupport = () => {
     scrollToBottom();
   }, [messages, isTyping]);
 
-  const getBotResponse = (userText: string) => {
-    const text = userText.toLowerCase();
-    if (text.includes('trouble breathing') || text.includes('attack')) {
-      return "Please try to remain calm and sit upright. Take 1 puff of your reliever inhaler (like Albuterol) every 30 to 60 seconds, up to 10 puffs. If symptoms do not improve, tap EMERGENCY MODE immediately.";
+  const getBotResponse = async (userText: string) => {
+    try {
+      setError('');
+      const response = await fetch('/api/v1/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: messages.map(msg => ({
+            sender: msg.sender,
+            text: msg.text
+          })).concat([
+            {
+              sender: 'user',
+              text: userText
+            }
+          ])
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to get response from AI doctor');
+      }
+
+      const data = await response.json();
+      return data.response;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Connection error. Please try again.';
+      setError(errorMessage);
+      throw err;
     }
-    if (text.includes('inhaler')) {
-      return "To use your inhaler: 1. Shake it vigorously. 2. Breathe out fully away from the device. 3. Seal your lips around the mouthpiece. 4. Press the canister while breathing in slowly. 5. Hold your breath for 10 seconds.";
-    }
-    if (text.includes('aqi') || text.includes('air quality')) {
-      return "Your local AQI is currently 42, which is Excellent. It is safe for you to carry out outdoor activities today!";
-    }
-    if (text.includes('hello') || text.includes('hi')) {
-      return "Hi there! How can I assist you with your asthma management today?";
-    }
-    return "I am a basic support module. For specific medical advice, please consult your doctor. But don't forget to track your symptoms in the Dashboard periodically.";
   };
 
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     if (!text.trim()) return;
     
     const userMessage: Message = {
@@ -62,23 +81,35 @@ const AISupport = () => {
     setInput('');
     setIsTyping(true);
 
-    setTimeout(() => {
+    try {
+      const aiResponse = await getBotResponse(text);
+      
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         sender: 'ai',
-        text: getBotResponse(text),
+        text: aiResponse,
         time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
       };
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        sender: 'ai',
+        text: "I apologize, but I'm having trouble connecting. Please check your connection and try again.",
+        time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 1000);
+    }
   };
 
   const commonQuestions = [
     "I'm having trouble breathing",
-    "What should I do during an attack?",
     "How do I use my inhaler?",
-    "Is my AQI level dangerous?"
+    "What are common asthma triggers?",
+    "When should I seek emergency help?"
   ];
 
   return (
@@ -106,6 +137,14 @@ const AISupport = () => {
            <Zap className="w-4 h-4 fill-current" />
         </button>
       </div>
+
+      {/* Error Message */}
+      {error && (
+        <div className="px-6 py-2 bg-[#FEE2E2] border-b border-[#FECACA] flex items-start gap-2">
+          <AlertCircle className="w-4 h-4 text-[#DC2626] shrink-0 mt-0.5" />
+          <span className="text-sm text-[#DC2626]">{error}</span>
+        </div>
+      )}
 
       {/* Chat Area */}
       <div className="flex-1 overflow-y-auto px-6 pb-40 pt-4 space-y-6 scrollbar-none">
