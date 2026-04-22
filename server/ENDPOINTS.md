@@ -48,26 +48,36 @@ Root: `/api/risk`
 
 ---
 
-## Planned Endpoints (Pending Implementation)
-
-The following endpoints are defined in the project roadmap but have not been implemented yet.
-
 ### User Profiles
-*   `GET /api/v1/users/me`
-*   `PUT /api/v1/users/me`
-*   `GET /api/v1/users/emergency-contacts`
+Root: `/api/v1/users`
+
+*   **GET /me**: Get the current user's profile.
+*   **PUT /me**: Update the current user's profile.
+*   **GET /emergency-contacts**: Retrieves a user's tracked emergency contacts.
+*   **DELETE /emergency-contacts/:email**: Deletes an emergency contact given their email.
 
 ### Alerts
-*   `GET /api/v1/alerts`
-*   `POST /api/v1/alerts`
-*   `DELETE /api/v1/alerts/:id`
+Root: `/api/v1/alerts`
+
+*   **GET /**: Return all alerts for the logged-in user, ordered by date.
+*   **POST /**: Create a new alert manually.
+*   **PUT /:id/read**: Mark a specific alert as read.
+*   **DELETE /:id**: Delete (dismiss) an alert.
 
 ### Symptoms & Medications
-*   `GET /api/v1/symptoms`
-*   `POST /api/v1/symptoms`
-*   `GET /api/v1/medications`
-*   `POST /api/v1/medications`
+Root: `/api/v1/symptoms` and `/api/v1/medications`
+
+*   **GET /api/v1/symptoms**: Get logged symptoms.
+*   **POST /api/v1/symptoms**: Log a new symptom.
+*   **GET /api/v1/medications**: Get user medications.
+*   **POST /api/v1/medications**: Add a new medication.
+*   **POST /api/v1/medications/:id/taken**: Log when a user takes a specific medication.
+*   **DELETE /api/v1/medications/:id**: Delete a tracked medication.
 
 ### Emergencies
-*   `POST /api/v1/emergency/trigger`
-*   `GET /api/v1/emergency/status/:id`
+Root: `/api/v1/emergency`
+
+*   **GET /guide**: Returns step-by-step asthma emergency guide as JSON (No Auth Required).
+*   **POST /trigger**: Record an emergency and use notification services to alert contacts.
+*   **POST /notify-contacts**: Send an emergency email to all contacts via Nodemailer.
+*   **PATCH /:id/resolve**: Mark an active emergency as resolved.

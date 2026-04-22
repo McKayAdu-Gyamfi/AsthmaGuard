@@ -13,6 +13,7 @@ This document describes how the Smart Asthma backend components interact to serv
     *   Requests are routed to specific routers in `src/routes/`.
     *   Example: `/api/v1/environment/*` for weather/AQI logic.
     *   Example: `/api/risk/*` for asthma risk assessment.
+    *   Example: `/api/v1/users/*`, `/api/v1/alerts/*`, `/api/v1/emergency/*` for core user data and emergency handling.
 5.  **Controllers**:
     *   Controllers in `src/controllers/` receive the request, validate input (optionally using schemas in `src/schemas/`), and call the appropriate services.
 6.  **Services**:
@@ -20,6 +21,7 @@ This document describes how the Smart Asthma backend components interact to serv
     *   `aqiService.js`: Fetches air quality data from external APIs (WAQI).
     *   `weatherService.js`: Fetches weather data (OpenWeather).
     *   `riskEngineService.js`: Contains the core ML-based risk assessment logic.
+    *   `notificationService.js`: Dispatches alerts via Nodemailer, SMS, and WhatsApp.
 7.  **Database**:
     *   `src/config/db.js` provides a shared PostgreSQL pool.
     *   Services use this pool or the Supabase client to persist/fetch data.

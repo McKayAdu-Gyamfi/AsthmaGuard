@@ -112,6 +112,7 @@ CREATE TABLE medications (
   created_at TIMESTAMP DEFAULT NOW()
 );
 
+
 CREATE TABLE medication_logs (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   medication_id UUID REFERENCES medications(id) ON DELETE CASCADE,
