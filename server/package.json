@@ -4,7 +4,8 @@
   "description": "This is the repo we will be using for our final project about a system for providing help to asthmatics and the bystanders in case it happes in public",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "repository": {
     "type": "git",
@@ -18,6 +19,7 @@
   },
   "homepage": "https://github.com/SMarco2310/Software-engineering-final-project#readme",
   "dependencies": {
+    "@supabase/supabase-js": "^2.103.3",
     "axios": "^1.13.6",
     "bcryptjs": "^3.0.3",
     "better-auth": "^1.5.5",
@@ -31,6 +33,8 @@
   },
   "type": "module",
   "devDependencies": {
-    "@better-auth/cli": "^1.4.21"
+    "@better-auth/cli": "^1.4.21",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.4"
   }
 }
