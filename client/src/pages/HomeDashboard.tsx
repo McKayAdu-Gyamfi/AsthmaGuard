@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bell, Activity, AlertCircle, Wind, Thermometer, Droplets, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';

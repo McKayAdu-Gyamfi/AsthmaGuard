@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Bell, Check, Wind, Activity, Pill, UserRound, Filter } from 'lucide-react';
 
 type Notification = {
