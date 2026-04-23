@@ -1,3 +1,5 @@
+import { pool } from "../config/db.js";
+
 /**
  * Notification Service
  * Handles alerts via SMS, WhatsApp, and general notification logging.
@@ -6,6 +8,19 @@
 export const sendSMS = async (phone, message) => {
   console.log(`[Notification Service] Sending SMS to ${phone}: ${message}`);
   return new Promise((resolve) => setTimeout(resolve, 50));
+};
+
+export const createDashboardAlert = async (userId, location, riskLevel, message) => {
+  if (!userId) return null;
+
+  const result = await pool.query(
+    `INSERT INTO alerts (user_id, location, risk_level, aqi, message)
+     VALUES ($1, $2, $3, $4, $5)
+     RETURNING *`,
+    [userId, location, riskLevel, null, message]
+  );
+
+  return result.rows[0];
 };
 
 export const sendWhatsApp = async (phone, message) => {
@@ -46,4 +61,5 @@ export default {
   sendSMS,
   sendWhatsApp,
   sendEmergencyAlert,
+  createDashboardAlert,
 };
