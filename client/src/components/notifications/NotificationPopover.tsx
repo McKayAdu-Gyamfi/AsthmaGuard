@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Bell, Check, Wind, Activity, Pill, UserRound, Filter } from 'lucide-react';
 
 type Notification = {
@@ -49,6 +49,35 @@ export const NotificationPopover = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'all' | 'unread'>('all');
   const [notifications, setNotifications] = useState(initialNotifications);
+
+  useEffect(() => {
+    const loadAlerts = async () => {
+      try {
+        const response = await fetch('/api/v1/alerts');
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (!data.success || !Array.isArray(data.data)) return;
+
+        const mapped = data.data.map((alert: any) => ({
+          id: alert.id,
+          type: 'alert' as const,
+          title: `${alert.risk_level || 'Risk'} Alert`,
+          message: alert.message || 'Elevated asthma risk detected.',
+          time: alert.created_at ? new Date(alert.created_at).toLocaleString() : 'Just now',
+          unread: true,
+        }));
+
+        if (mapped.length > 0) {
+          setNotifications(mapped);
+        }
+      } catch (err) {
+        console.error('Failed to fetch notifications:', err);
+      }
+    };
+
+    loadAlerts();
+  }, []);
 
   const handleMarkAllAsRead = () => {
     setNotifications(notifications.map(n => ({ ...n, unread: false })));

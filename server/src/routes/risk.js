@@ -16,6 +16,7 @@
 import express from "express";
 import { assessRisk, updateWeights, RISK_LEVEL } from "../services/riskEngineService.js";
 import supabase from "../config/supabase.js";
+import { createDashboardAlert } from "../services/notificationService.js";
 import { optionalAuth } from "../middlewares/optionalAuth.js";
 const router  = express.Router();
 
@@ -97,24 +98,42 @@ if (errors.length > 0) {
   const result = assessRisk({ aqi, pm25, humidity, temperatureC });
   const userId = req.user ? req.user.id : null;
 
-// 🔥 SAVE TO SUPABASE
-  const{error}= await supabase.from("risk_readings").insert([
-     {
-    user_id: userId,
-    location: "Accra, Ghana",
-    aqi,
-    pm25,
-    humidity,
-    temperature: temperatureC,
-    risk_level: result.overallRisk,
-    risk_score: Math.round(result.mlProbability * 100)
+  // 🔥 SAVE TO SUPABASE
+  const { error } = await supabase.from("risk_readings").insert([
+    {
+      user_id: userId,
+      location: "Accra, Ghana",
+      aqi,
+      pm25,
+      humidity,
+      temperature: temperatureC,
+      risk_level: result.overallRisk,
+      risk_score: Math.round(result.mlProbability * 100)
+    }
+  ]);
+  if (error) {
+    console.error("Supabase insert error:", error);
   }
-]);
-if (error) {
-  console.error("Supabase insert error:", error);
-}
 
-return res.json({ success: true, data: result });
+  if (userId && result.overallRisk !== RISK_LEVEL.LOW) {
+    const alertMessage = result.alerts
+      .map((alert) => alert.message)
+      .filter(Boolean)
+      .join(" ");
+
+    try {
+      await createDashboardAlert(
+        userId,
+        "Accra, Ghana",
+        result.overallRisk,
+        alertMessage || `Asthma risk is ${result.overallRisk}. Follow the recommended precautions.`
+      );
+    } catch (alertError) {
+      console.error("Failed to create dashboard alert:", alertError);
+    }
+  }
+
+  return res.json({ success: true, data: result });
 });
 
 // ─── POST /api/risk/feedback ─────────────────

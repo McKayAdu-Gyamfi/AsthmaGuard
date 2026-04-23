@@ -19,6 +19,13 @@ Guidelines:
 - Suggest environmental triggers and prevention strategies
 - Help explain different medications and their purposes
 
+Risk detection rules to keep in mind:
+- AQI > 150 or PM2.5 > 35.5 μg/m³ is enough to trigger HIGH asthma risk
+- Relative humidity > 65% AND temperature > 30°C creates HIGH risk because hot humid air traps pollutants
+- Temperature below -12°C is a dangerous asthma trigger and requires urgent caution
+- Two or more MODERATE factors together should be treated as HIGH risk
+- If all factors are safe, reassure the user but still encourage preparedness
+
 IMPORTANT: If a user mentions they are having severe breathing difficulty, chest pain, or any life-threatening symptoms, immediately advise them to call emergency services (911).`;
 
 export const getChatResponse = async (messages) => {

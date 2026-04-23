@@ -1,12 +1,34 @@
+import { useState, useEffect } from 'react';
 import { Bell, Activity, AlertCircle, Wind, Thermometer, Droplets, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { CircularProgress } from '@/components/CircularProgress';
 
-
 const HomeDashboard = () => {
   const navigate = useNavigate();
+  const [latestAlert, setLatestAlert] = useState<null | { id: string; risk_level: string; message: string; created_at: string; location?: string }>(null);
+  const [loadingAlert, setLoadingAlert] = useState(true);
+
+  useEffect(() => {
+    const loadLatestAlert = async () => {
+      try {
+        const response = await fetch('/api/v1/alerts');
+        if (!response.ok) return;
+        const data = await response.json();
+
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setLatestAlert(data.data[0]);
+        }
+      } catch (error) {
+        console.error('Failed to load latest alert:', error);
+      } finally {
+        setLoadingAlert(false);
+      }
+    };
+
+    loadLatestAlert();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#F6F8F9] to-white flex flex-col relative pb-24 font-sans">
@@ -111,6 +133,27 @@ const HomeDashboard = () => {
            <div className="w-12 h-12 rounded-2xl bg-[#EAF1F2] flex items-center justify-center shrink-0">
               <ShieldCheck className="w-6 h-6 text-[#0A5D64]" />
            </div>
+        </Card>
+
+        {/* Latest Alert Card */}
+        <Card className="rounded-3xl border-none shadow-sm p-5 mb-6 bg-white">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-400">Latest Alert</p>
+              <h3 className="text-[17px] font-bold text-slate-900">{latestAlert ? `${latestAlert.risk_level} Risk Alert` : 'No active alerts'}</h3>
+            </div>
+            <span className="text-[12px] text-slate-500">{latestAlert ? new Date(latestAlert.created_at).toLocaleString() : loadingAlert ? 'Loading…' : 'Today'}</span>
+          </div>
+
+          <div className="text-[13px] text-slate-600 leading-relaxed">
+            {latestAlert
+              ? latestAlert.message
+              : (loadingAlert ? 'Checking your latest alerts...' : 'All conditions are currently stable. Continue monitoring air quality and symptoms.')}
+          </div>
+
+          {latestAlert?.location && (
+            <p className="mt-4 text-[12px] text-slate-400">Location: {latestAlert.location}</p>
+          )}
         </Card>
 
         {/* Weekly Progress */}

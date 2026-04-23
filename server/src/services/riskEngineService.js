@@ -328,16 +328,45 @@ function getAlerts(risk, factors) {
   const alerts = [];
 
   if (factors.aqi?.risk === RISK_LEVEL.HIGH || factors.aqi?.risk === RISK_LEVEL.EMERGENCY) {
-    alerts.push({ type: "AQI", message: `AQI is ${factors.aqi.value} — ${factors.aqi.label}` });
+    alerts.push({
+      type: "AQI",
+      message: `AQI is ${factors.aqi.value} — ${factors.aqi.label}. This alone is enough to trigger a HIGH asthma risk alert.`
+    });
   }
+
   if (factors.pm25?.risk === RISK_LEVEL.HIGH || factors.pm25?.risk === RISK_LEVEL.EMERGENCY) {
-    alerts.push({ type: "PM2.5", message: `PM2.5 is ${factors.pm25.value} μg/m³ — unhealthy range` });
+    alerts.push({
+      type: "PM2.5",
+      message: `PM2.5 is ${factors.pm25.value} μg/m³ — unhealthy for sensitive groups. Avoid outdoor exposure and keep inhaler ready.`
+    });
   }
-  if (factors.humidity?.risk !== RISK_LEVEL.LOW) {
-    alerts.push({ type: "Humidity", message: `Humidity is ${factors.humidity.value}% — ${factors.humidity.risk.toLowerCase()} risk` });
+
+  if (factors.humidity?.risk === RISK_LEVEL.HIGH || factors.humidity?.risk === RISK_LEVEL.EMERGENCY) {
+    alerts.push({
+      type: "Humidity",
+      message: `Humidity is ${factors.humidity.value}% — high humidity can trap pollutants and worsen asthma. Keep indoor humidity below 50%.`
+    });
   }
-  if (factors.temperature?.risk !== RISK_LEVEL.LOW) {
-    alerts.push({ type: "Temperature", message: factors.temperature.label });
+
+  if (factors.temperature?.risk === RISK_LEVEL.HIGH || factors.temperature?.risk === RISK_LEVEL.EMERGENCY) {
+    alerts.push({
+      type: "Temperature",
+      message: `Temperature condition: ${factors.temperature.label}. Extreme temperature is a known asthma trigger.`
+    });
+  }
+
+  if (risk === RISK_LEVEL.HIGH) {
+    alerts.push({
+      type: "Risk",
+      message: "High-risk conditions detected: combine environmental triggers with asthma management actions immediately."
+    });
+  }
+
+  if (risk === RISK_LEVEL.EMERGENCY) {
+    alerts.push({
+      type: "Emergency",
+      message: "Emergency conditions detected. Go indoors, use your rescue inhaler, and contact medical help if symptoms worsen."
+    });
   }
 
   return alerts;
