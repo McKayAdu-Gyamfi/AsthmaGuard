@@ -11,6 +11,7 @@ export const BottomNav: React.FC = () => {
     { name: 'Home', path: '/', icon: LayoutDashboard },
     { name: 'Insights', path: '/insights', icon: LineChart },
     { name: 'Health', path: '/health', icon: Activity },
+    { name: 'AI Support', path: '/ai-support', icon: MessageSquare },
     { name: 'Profile', path: '/profile', icon: User }
   ];
 

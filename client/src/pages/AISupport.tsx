@@ -54,8 +54,15 @@ const AISupport = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to get response from AI doctor');
+        let errorMessage = 'Failed to get response from AI doctor';
+        try {
+          const errorData = await response.json();
+          if (errorData.message) errorMessage = errorData.message;
+        } catch (e) {
+          // If the server isn't running, it might return a 504 HTML page instead of JSON
+          errorMessage = `Server error (${response.status}). Please make sure the backend server is running.`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();

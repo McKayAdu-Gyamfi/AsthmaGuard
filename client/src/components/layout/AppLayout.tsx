@@ -13,6 +13,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Home', path: '/', icon: LayoutDashboard },
     { name: 'Insights', path: '/insights', icon: LineChart },
     { name: 'Health', path: '/health', icon: Activity },
+    { name: 'AI Support', path: '/ai-support', icon: MessageSquare },
     { name: 'Profile', path: '/profile', icon: User },
   ];
 
@@ -20,21 +21,8 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-[#F9FAFB] flex font-sans text-slate-900 w-full overflow-hidden">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-[250px] bg-white border-r border-[#E5E7EB] shrink-0 h-screen sticky top-0 relative z-20">
-        <div className="p-6 md:p-8 flex items-center gap-3">
-          {/* Logo mock matching image */}
-          <div className="relative">
-             <div className="w-8 h-8 rounded-full border-4 border-[#044E45] flex items-center justify-center relative">
-               <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-[#044E45] transform rotate-45"></div>
-             </div>
-          </div>
-          <div>
-            <h1 className="text-[18px] font-bold text-[#044E45] leading-tight tracking-tight">AsthmaCare</h1>
-            <p className="text-[9px] uppercase tracking-widest text-slate-400 font-bold">Health Solution</p>
-          </div>
-        </div>
-
         {/* User Card */}
-        <div className="px-6 mb-8">
+        <div className="p-6 md:p-8 mb-2">
           <div className="bg-[#F0F5F5] rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-[#E6EDED] transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden">
@@ -43,7 +31,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                   <circle cx="50" cy="55" r="22" fill="#FCE7D9"/>
                 </svg>
               </div>
-              <span className="text-[14px] font-semibold text-slate-800">Robert Foxer</span>
+              <span className="text-[14px] font-semibold text-slate-800">Sarah Mensah</span>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="m6 9 6 6 6-6"/></svg>
           </div>
@@ -89,19 +77,17 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
         {/* Top Header */}
         <header className="h-[80px] bg-white border-b border-[#E5E7EB] shrink-0 px-6 flex items-center justify-end md:justify-between sticky top-0 z-50 w-full transition-all">
-           {/* Desktop search is visible, mobile hidden */}
-           <div className="hidden md:block">
-             <h2 className="text-[24px] font-bold text-slate-800 ml-2">Overview</h2>
+           {/* Custom Logo Component on Navbar */}
+           <div className="hidden md:flex items-center gap-3 ml-2">
+             <img src="/favicon.png" alt="AsthmaGuard Icon" className="w-9 h-9 object-contain" />
+             <div className="flex flex-col justify-center">
+               <h1 className="text-[20px] font-bold text-[#044E45] leading-none tracking-tight">AsthmaGuard</h1>
+               <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Breathe easy. Stay protected.</p>
+             </div>
            </div>
 
            <div className="flex items-center gap-3">
-             <button className="hidden md:flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#FFF5F1] text-[#E0633C] text-[13px] font-bold shadow-sm whitespace-nowrap">
-               ✨ Upgrade plan
-             </button>
-             
-             <button className="w-10 h-10 rounded-full flex items-center justify-center hover:bg-slate-100 text-slate-600 transition-colors">
-                <Search className="w-5 h-5" />
-             </button>
+
              
              <NotificationPopover />
              

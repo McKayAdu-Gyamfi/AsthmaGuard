@@ -1,7 +1,7 @@
 import { pool } from '../config/db.js';
 import { getWeather } from '../services/weatherService.js';
 import { getAQI } from '../services/aqiService.js';
-import { calculateRisk } from '../services/riskEngineService.js';
+import { assessRisk } from '../services/riskEngineService.js';
 
 export const getCurrentConditions = async (req, res) => {
   try {
@@ -18,7 +18,17 @@ export const getCurrentConditions = async (req, res) => {
     ]);
 
     // Calculate risk
-    const riskData = calculateRisk(weatherData, aqiData);
+    const riskResult = assessRisk({
+      aqi: aqiData.aqi,
+      pm25: aqiData.pm25,
+      humidity: weatherData.humidity,
+      temperatureC: weatherData.temperature
+    });
+
+    const riskData = {
+      risk_level: riskResult.overallRisk,
+      risk_score: riskResult.mlProbability * 100 // Scale to 0-100 or something similar
+    };
 
     // Save reading to database
     // user_id comes from the requireAuth middleware (req.user.id)

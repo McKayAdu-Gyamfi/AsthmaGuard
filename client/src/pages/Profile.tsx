@@ -77,7 +77,7 @@ const Profile = () => {
           </div>
        </div>
 
-       <div className="px-6 -mt-10 space-y-6">
+       <div className="px-6 mt-6 space-y-6">
           {/* Severity & Location Settings */}
           <Card className="p-6 rounded-[32px] border-none shadow-sm bg-white">
              <h3 className="text-[15px] font-bold text-slate-900 mb-5">Medical Settings</h3>
