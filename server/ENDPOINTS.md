@@ -69,6 +69,7 @@ Root: `/api/v1/symptoms` and `/api/v1/medications`
 
 *   **GET /api/v1/symptoms**: Get logged symptoms.
 *   **POST /api/v1/symptoms**: Log a new symptom.
+*   **DELETE /api/v1/symptoms/:id**: Delete a tracked symptom.
 *   **GET /api/v1/medications**: Get user medications.
 *   **POST /api/v1/medications**: Add a new medication.
 *   **POST /api/v1/medications/:id/taken**: Log when a user takes a specific medication.
@@ -81,3 +82,14 @@ Root: `/api/v1/emergency`
 *   **POST /trigger**: Record an emergency and use notification services to alert contacts.
 *   **POST /notify-contacts**: Send an emergency email to all contacts via Nodemailer.
 *   **PATCH /:id/resolve**: Mark an active emergency as resolved.
+
+### Chat
+Root: `/api/v1/chat`
+
+*   **POST /**: Send a message to the AI Asthma doctor.
+
+### History
+Root: `/api/v1/history`
+
+*   **GET /**: Retrieve user's historical data (symptoms, medications, risk assessments).
+
