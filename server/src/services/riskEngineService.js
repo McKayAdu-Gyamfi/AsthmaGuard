@@ -589,5 +589,6 @@ export {
   mlPredict,
   updateWeights,
   RISK_LEVEL,
+  assessRisk as calculateRisk,
 };
 

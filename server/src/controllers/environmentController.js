@@ -1,7 +1,7 @@
 import { pool } from '../config/db.js';
 import { getWeather } from '../services/weatherService.js';
 import { getAQI } from '../services/aqiService.js';
-import { calculateRisk } from '../services/riskEngineService.js';
+import { assessRisk } from '../services/riskEngineService.js';
 
 export const getCurrentConditions = async (req, res) => {
   try {
@@ -18,7 +18,19 @@ export const getCurrentConditions = async (req, res) => {
     ]);
 
     // Calculate risk
-    const riskData = calculateRisk(weatherData, aqiData);
+    const riskData = assessRisk({
+      aqi: aqiData.aqi,
+      pm25: aqiData.pm25,
+      humidity: weatherData.humidity,
+      temperatureC: weatherData.temp,
+    });
+
+    const riskScoreMap = {
+      LOW: 1,
+      MODERATE: 2,
+      HIGH: 3,
+      EMERGENCY: 4,
+    };
 
     // Save reading to database
     // user_id comes from the requireAuth middleware (req.user.id)
@@ -34,12 +46,12 @@ export const getCurrentConditions = async (req, res) => {
 
     const values = [
       userId,
-      weatherData.temperature,
+      weatherData.temp,
       weatherData.humidity,
       aqiData.aqi,
       aqiData.pm25,
-      riskData.risk_level,
-      riskData.risk_score
+      riskData.overallRisk,
+      riskScoreMap[riskData.overallRisk] ?? 0,
     ];
 
     const result = await pool.query(query, values);

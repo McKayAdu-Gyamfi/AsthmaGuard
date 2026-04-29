@@ -12,12 +12,7 @@ type Message = {
 const AISupport = () => {
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      sender: 'ai',
-      text: "Hello! I'm AsthmaGuard AI, your personal Asthma Support Doctor. I'm here 24/7 to help you manage your asthma. How are you feeling today? If you're in distress, tap \"EMERGENCY MODE\" above.",
-      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
-    }
+    // Initial greeting removed - chat starts fresh when user sends first message
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);

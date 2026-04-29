@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function getWeatherData(lat, lon) {
+export async function getWeather(lat, lon) {
   const apiKey = process.env.OPENWEATHER_API_KEY;
 
   try {

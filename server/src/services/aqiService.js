@@ -3,7 +3,7 @@ config();
 
 import axios from 'axios';
 
-async function getAQIData(lat, lon) {
+export async function getAQI(lat, lon) {
   const token = process.env.WAQI_TOKEN;
 
   try {

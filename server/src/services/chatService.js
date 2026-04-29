@@ -30,17 +30,21 @@ IMPORTANT: If a user mentions they are having severe breathing difficulty, chest
 
 export const getChatResponse = async (messages) => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-    // Format messages for the API
-    const history = messages.slice(0, -1).map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
+    // Build history from all previous messages (user sent them in order)
+    const history = [];
+    for (let i = 0; i < messages.length - 1; i++) {
+      const msg = messages[i];
+      history.push({
+        role: msg.sender === 'user' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      });
+    }
 
     const userMessage = messages[messages.length - 1].text;
 
-    // Start chat session with system prompt
+    // Start chat session
     const chat = model.startChat({
       history: history,
       generationConfig: {
@@ -49,9 +53,9 @@ export const getChatResponse = async (messages) => {
       },
     });
 
-    // Send message with system context
+    // Send the current user message
     const result = await chat.sendMessage(
-      `[System: ${ASTHMA_DOCTOR_SYSTEM_PROMPT}]\n\nUser message: ${userMessage}`
+      `[System: ${ASTHMA_DOCTOR_SYSTEM_PROMPT}]\n\nUser: ${userMessage}`
     );
 
     const response = result.response.text();
