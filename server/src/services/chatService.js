@@ -35,7 +35,7 @@ export const getChatResponse = async (messages) => {
       return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Google Gemini API key is missing. Add a valid GOOGLE_API_KEY to server/.env for real AI responses.)*";
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
     // Format messages for the API
     let history = messages.slice(0, -1).map(msg => ({

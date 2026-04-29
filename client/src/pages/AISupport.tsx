@@ -21,6 +21,7 @@ const AISupport = () => {
   ]);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isTriggering, setIsTriggering] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -112,6 +113,41 @@ const AISupport = () => {
     }
   };
 
+  const handleEmergency = async () => {
+    setIsTriggering(true);
+    try {
+      let location = "Unknown Location";
+      try {
+        if ("geolocation" in navigator) {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+          });
+          // Note: In production you might use a reverse geocoding API to get a real address
+          location = `Lat: ${position.coords.latitude.toFixed(4)}, Lng: ${position.coords.longitude.toFixed(4)}`;
+        }
+      } catch (e) {
+        console.log("Geolocation error:", e);
+      }
+
+      const res = await fetch('/api/v1/emergency/trigger', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure auth if required
+        },
+        body: JSON.stringify({ location })
+      });
+      
+      if (!res.ok) throw new Error('Failed to trigger emergency');
+      
+      // Redirect to the Asthma Attack Guide immediately
+      navigate('/asthma-attack');
+    } catch (err) {
+      setError('Failed to trigger emergency mode. Please call emergency services immediately.');
+      setIsTriggering(false);
+    }
+  };
+
   const commonQuestions = [
     "I'm having trouble breathing",
     "How do I use my inhaler?",
@@ -121,28 +157,24 @@ const AISupport = () => {
 
   return (
     <div className="h-[100dvh] w-full bg-[#F4F5F9] flex flex-col font-sans relative overflow-hidden">
-      {/* Header */}
-      <div className="flex items-center justify-between px-6 pt-12 pb-4 shrink-0 bg-[#F4F5F9] z-10">
-         <button onClick={() => navigate(-1)} className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm text-gray-800 hover:bg-gray-50 transition-colors">
-           <ArrowLeft className="w-5 h-5" />
-         </button>
-         <div className="flex flex-col items-center">
-           <h1 className="text-xl font-medium tracking-wide text-gray-800">AI Support</h1>
-           <span className="text-[10px] text-gray-400 font-medium">AsthmaGuard AI</span>
-         </div>
+      {/* Top Bar: Online Status & Compact Emergency Button */}
+      <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 bg-[#F4F5F9] z-10">
          <div className="flex items-center gap-1.5 bg-[#DDF2E4] px-3 py-1.5 rounded-full shadow-sm">
-           <div className="w-1.5 h-1.5 rounded-full bg-[#10B981]"></div>
-           <span className="text-[11px] font-bold text-[#113C33] tracking-wide">Online</span>
+           <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></div>
+           <span className="text-[11px] font-bold text-[#113C33] tracking-wide">AI Online</span>
          </div>
-      </div>
-
-      {/* Emergency Button - fixed under header */}
-      <div className="px-6 pb-2 pt-2 bg-[#F4F5F9] shrink-0 z-10">
-        <button className="w-full bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] transition-colors rounded-2xl py-3 flex items-center justify-center gap-2 shadow-sm border border-[#FCA5A5]/30">
-           <Zap className="w-4 h-4 fill-current" />
-           <span className="font-bold tracking-wider text-[13px]">EMERGENCY MODE</span>
-           <Zap className="w-4 h-4 fill-current" />
-        </button>
+         <button 
+           onClick={handleEmergency}
+           disabled={isTriggering}
+           className="bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] transition-colors rounded-full px-4 py-1.5 flex items-center justify-center gap-1.5 shadow-sm border border-[#FCA5A5]/30 disabled:opacity-50"
+         >
+           {isTriggering ? (
+             <div className="w-3.5 h-3.5 border-2 border-[#DC2626] border-t-transparent rounded-full animate-spin"></div>
+           ) : (
+             <Zap className="w-3.5 h-3.5 fill-current" />
+           )}
+           <span className="font-bold tracking-wider text-[11px]">{isTriggering ? 'TRIGGERING...' : 'EMERGENCY'}</span>
+         </button>
       </div>
 
       {/* Error Message */}
