@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, CalendarDays, User, Search, Settings, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, LineChart, Activity, User, Search, Settings, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
@@ -10,10 +10,9 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+    { name: 'Home', path: '/', icon: LayoutDashboard },
     { name: 'Insights', path: '/insights', icon: LineChart },
-    { name: 'Plan', path: '/plan', icon: CalendarDays },
-    { name: 'AI Support', path: '/ai-support', icon: MessageSquare },
+    { name: 'Health', path: '/health', icon: Activity },
     { name: 'Profile', path: '/profile', icon: User },
   ];
 

@@ -90,6 +90,23 @@ const Signup = () => {
               </button>
             </div>
           </div>
+
+          <div className="space-y-1.5">
+            <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1">
+              ASTHMA SEVERITY
+            </label>
+            <div className="flex gap-2">
+              {['Mild', 'Moderate', 'Severe'].map((sev) => (
+                <button
+                  key={sev}
+                  type="button"
+                  className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-white border border-slate-200 text-slate-400 hover:border-[#2F5E60] hover:text-[#2F5E60] transition-all focus:bg-[#EAF1F2] focus:text-[#2F5E60] focus:border-[#2F5E60]"
+                >
+                  {sev}
+                </button>
+              ))}
+            </div>
+          </div>
           
           <div className="flex items-start gap-3 pt-2">
             <div className="flex items-center h-5 mt-0.5">

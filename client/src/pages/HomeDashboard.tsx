@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Bell, Activity, AlertCircle, Wind, Thermometer, Droplets, ShieldCheck } from 'lucide-react';
+import { Bell, Activity, AlertCircle, Wind, Thermometer, Droplets, ShieldCheck, Pill } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -51,7 +51,10 @@ const HomeDashboard = () => {
             <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">Good Morning, Sarah</h1>
           </div>
         </div>
-        <button className="p-2.5 rounded-full bg-white shadow-sm border border-slate-100 text-slate-700 relative">
+        <button 
+          onClick={() => navigate('/alerts-history')}
+          className="p-2.5 rounded-full bg-white shadow-sm border border-slate-100 text-slate-700 relative"
+        >
           <Bell className="w-5 h-5 fill-slate-700" />
           <div className="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-red-500 border border-white"></div>
         </button>
@@ -61,16 +64,17 @@ const HomeDashboard = () => {
         {/* Quick Actions Base */}
         <div className="flex gap-3 mb-6">
           <Button 
+            onClick={() => navigate('/health')}
             className="flex-1 h-14 bg-[#0A5D64] hover:bg-[#07474E] text-white font-semibold rounded-xl text-[15px] shadow-sm flex items-center justify-center gap-2"
           >
             <Activity className="w-5 h-5" />
             Track Symptoms
           </Button>
           <Button 
-            onClick={() => navigate('/astma-attack')}
-            className="flex-1 h-14 bg-[#FEE2E2] hover:bg-[#FECACA] text-[#DC2626] font-bold rounded-xl text-[15px] shadow-sm flex items-center justify-center gap-2"
+            onClick={() => navigate('/asthma-attack')}
+            className="flex-1 h-14 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl text-[15px] shadow-sm flex items-center justify-center gap-2 border border-red-100"
           >
-            <AlertCircle className="w-5 h-5" />
+            <AlertCircle className="w-5 h-5 fill-red-600/10" />
             Emergency
           </Button>
         </div>
@@ -93,9 +97,37 @@ const HomeDashboard = () => {
             <h3 className="text-[17px] font-bold text-[#0F172A] mb-4">Excellent conditions today</h3>
             <Wind className="absolute right-5 top-5 w-6 h-6 text-[#0A5D64]" />
             <div className="flex items-center justify-between mt-2 pt-4 border-t border-slate-100">
-               <span className="text-[12px] text-[#475569]">Based on your current location in Seattle</span>
-               <Button variant="secondary" className="h-8 px-4 text-[12px] font-bold bg-[#EAF1F2] text-[#0A5D64] hover:bg-[#D1E0E1]">Details</Button>
+               <span className="text-[12px] text-[#475569]">Based on your current location in Accra</span>
+               <Button 
+                 variant="secondary" 
+                 onClick={() => navigate('/insights')}
+                 className="h-8 px-4 text-[12px] font-bold bg-[#EAF1F2] text-[#0A5D64] hover:bg-[#D1E0E1]"
+               >
+                 Details
+               </Button>
             </div>
+          </div>
+        </div>
+
+        {/* Smart Recommendations Section (New) */}
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-4 px-1">
+             <h4 className="text-[16px] font-bold text-slate-900">Today's Recommendations</h4>
+             <ShieldCheck className="w-5 h-5 text-[#0A5D64]" />
+          </div>
+          <div className="space-y-3">
+             <Card className="p-4 rounded-2xl border-none shadow-sm bg-white flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                  <Wind className="w-5 h-5 text-blue-500" />
+                </div>
+                <p className="text-[13px] text-slate-600 font-medium">Keep windows closed during morning hours to avoid pollen.</p>
+             </Card>
+             <Card className="p-4 rounded-2xl border-none shadow-sm bg-white flex items-center gap-4">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                  <Activity className="w-5 h-5 text-orange-500" />
+                </div>
+                <p className="text-[13px] text-slate-600 font-medium">High humidity detected. Stay in air-conditioned areas if possible.</p>
+             </Card>
           </div>
         </div>
 
@@ -117,6 +149,28 @@ const HomeDashboard = () => {
             <p className="text-[22px] font-bold text-slate-900 mb-0.5">45%</p>
             <p className="text-[12px] text-slate-500">Optimal Level</p>
           </Card>
+        </div>
+
+        {/* Quick Links (New) */}
+        <div className="grid grid-cols-2 gap-4 mb-6">
+           <button 
+             onClick={() => navigate('/health')}
+             className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-3 transition-all hover:shadow-md"
+           >
+              <div className="w-12 h-12 rounded-2xl bg-[#EAF1F2] flex items-center justify-center">
+                <Pill className="w-6 h-6 text-[#0A5D64]" />
+              </div>
+              <span className="text-[14px] font-bold text-slate-800">My Meds</span>
+           </button>
+           <button 
+             onClick={() => navigate('/emergency-contacts')}
+             className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-3 transition-all hover:shadow-md"
+           >
+              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
+                <ShieldCheck className="w-6 h-6 text-red-500" />
+              </div>
+              <span className="text-[14px] font-bold text-slate-800">Emergency</span>
+           </button>
         </div>
 
         {/* Risk Level Banner */}
