@@ -1,4 +1,4 @@
-import { assessRisk, computeRuleBasedRisk }from "../../server/src/services/riskEngineService.js";
+import { assessRisk, computeRuleBasedRisk } from "../../src/services/riskEngineService.js";
 
 describe("Risk Engine Tests", () => {
 
