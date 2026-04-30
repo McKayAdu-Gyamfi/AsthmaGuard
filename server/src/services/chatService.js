@@ -1,9 +1,16 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({
-  apiKey: process.env.XAI_API_KEY,
-  baseURL: "https://api.x.ai/v1",
-});
+// Lazily initialized so dotenv has time to load before we read env vars
+let _client = null;
+function getClient() {
+  if (!_client) {
+    _client = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
+  }
+  return _client;
+}
 
 const ASTHMA_DOCTOR_SYSTEM_PROMPT = `You are an empathetic and knowledgeable Asthma Support Doctor. Your role is to:
 
@@ -34,8 +41,8 @@ IMPORTANT: If a user mentions they are having severe breathing difficulty, chest
 export const getChatResponse = async (messages) => {
   try {
     // If no key is configured, fallback immediately
-    if (!process.env.XAI_API_KEY || process.env.XAI_API_KEY === 'your_api_key_here') {
-      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the xAI Grok API key is missing. Add a valid XAI_API_KEY to server/.env for real AI responses.)*";
+    if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'your_api_key_here') {
+      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Groq API key is missing. Add a valid GROQ_API_KEY to server/.env for real AI responses.)*";
     }
 
     // Format messages for the OpenAI-compatible API
@@ -47,8 +54,8 @@ export const getChatResponse = async (messages) => {
       }))
     ];
 
-    const completion = await client.chat.completions.create({
-      model: "grok-3-mini",
+    const completion = await getClient().chat.completions.create({
+      model: "llama-3.3-70b-versatile",
       messages: formattedMessages,
       max_tokens: 1024,
       temperature: 0.7,
