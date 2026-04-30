@@ -1,6 +1,9 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
+const client = new OpenAI({
+  apiKey: process.env.XAI_API_KEY,
+  baseURL: "https://api.x.ai/v1",
+});
 
 const ASTHMA_DOCTOR_SYSTEM_PROMPT = `You are an empathetic and knowledgeable Asthma Support Doctor. Your role is to:
 
@@ -31,57 +34,36 @@ IMPORTANT: If a user mentions they are having severe breathing difficulty, chest
 export const getChatResponse = async (messages) => {
   try {
     // If no key is configured, fallback immediately
-    if (!process.env.GOOGLE_API_KEY || process.env.GOOGLE_API_KEY === 'your_api_key_here') {
-      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Google Gemini API key is missing. Add a valid GOOGLE_API_KEY to server/.env for real AI responses.)*";
+    if (!process.env.XAI_API_KEY || process.env.XAI_API_KEY === 'your_api_key_here') {
+      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the xAI Grok API key is missing. Add a valid XAI_API_KEY to server/.env for real AI responses.)*";
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Format messages for the OpenAI-compatible API
+    const formattedMessages = [
+      { role: "system", content: ASTHMA_DOCTOR_SYSTEM_PROMPT },
+      ...messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text,
+      }))
+    ];
 
-    // Format messages for the API
-    let history = messages.slice(0, -1).map(msg => ({
-      role: msg.sender === 'user' ? 'user' : 'model',
-      parts: [{ text: msg.text }]
-    }));
-
-    // Gemini requires the first message in history to be from 'user'
-    while (history.length > 0 && history[0].role === 'model') {
-      history.shift();
-    }
-
-    // Gemini also requires roles to alternate strictly.
-    const validHistory = [];
-    for (const msg of history) {
-      if (validHistory.length === 0 || validHistory[validHistory.length - 1].role !== msg.role) {
-        validHistory.push(msg);
-      } else {
-        // Combine consecutive messages of the same role
-        validHistory[validHistory.length - 1].parts[0].text += '\n\n' + msg.parts[0].text;
-      }
-    }
-
-    const userMessage = messages[messages.length - 1].text;
-
-    // Start chat session with system prompt
-    const chat = model.startChat({
-      history: validHistory,
-      generationConfig: {
-        maxOutputTokens: 1024,
-        temperature: 0.7,
-      },
+    const completion = await client.chat.completions.create({
+      model: "grok-3-mini",
+      messages: formattedMessages,
+      max_tokens: 1024,
+      temperature: 0.7,
     });
 
-    // Send message with system context
-    const result = await chat.sendMessage(
-      `[System: ${ASTHMA_DOCTOR_SYSTEM_PROMPT}]\n\nUser message: ${userMessage}`
-    );
-
-    const response = result.response.text();
-    return response;
+    return completion.choices[0].message.content;
   } catch (error) {
     console.error("Chat service error:", error);
-    
-    // Fallback on ANY API error (invalid key, quota exceeded, model not found, etc.)
-    return getMockResponse(messages) + `\n\n*(Note: This is a simulated response because the Gemini API failed: ${error.message})*`;
+
+    // Fallback if the API key is invalid so the UI doesn't break
+    if (error.status === 401 || (error.message && error.message.includes('API key'))) {
+      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the xAI Grok API key is invalid. Update your XAI_API_KEY in server/.env for real AI responses.)*";
+    }
+
+    throw new Error("Failed to get AI response: " + error.message);
   }
 };
 
