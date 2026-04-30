@@ -7,33 +7,86 @@ import { Input } from '@/components/ui/input';
 const Signup = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [severity, setSeverity] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSignup = async () => {
+    if (!name || !email || !password) return setError('Please fill out all required fields.');
+    setError('');
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/auth/sign-up/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || 'Signup failed. Please try again.');
+      } else {
+        // Automatically route to dashboard after successful signup
+        window.location.href = '/';
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await fetch('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL: window.location.origin
+        })
+      });
+      
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (!res.ok) {
+        setError('Google login is not properly configured. Check your server environment variables.');
+      }
+    } catch (err) {
+      setError('Failed to initiate Google login.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F6F8F9] flex flex-col relative overflow-y-auto">
-      <div className="px-6 py-10 flex-1 flex flex-col items-center">
-        {/* Header section with icons */}
-        <div className="w-full flex justify-end gap-3 mb-6 relative z-10">
-           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
-           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"/></svg>
+      <div className="px-6 py-10 flex-1 flex flex-col items-center max-w-sm mx-auto w-full">
+        {/* Spacer */}
+        <div className="h-6 mb-4"></div>
+
+        {/* Brand Logo */}
+        <div className="flex items-center gap-3 mb-8">
+          <img src="/favicon.png" alt="AsthmaGuard Icon" className="w-12 h-12 object-contain" />
+          <div className="flex flex-col justify-center">
+            <h1 className="text-[26px] font-bold text-[#044E45] leading-none tracking-tight">AsthmaGuard</h1>
+            <p className="text-[13px] text-slate-500 font-medium leading-tight mt-1">Breathe easy. Stay protected.</p>
+          </div>
         </div>
 
-        {/* Info Header */}
-        <div className="w-16 h-16 rounded-2xl bg-[#D2EFF0] flex items-center justify-center mb-4 shadow-sm">
-          {/* Medical Bag SVG */}
-           <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#2F5E60] fill-[#2F5E60]">
-            <path d="M12 21.5c-1.5-2.5-4-4.5-7-4.5-2.5 0-4-1.5-4-4s1.5-4 4-4c2 0 3 1.5 4 3 1 1 2 1.5 3 1.5M12 21.5c1.5-2.5 4-4.5 7-4.5 2.5 0 4-1.5 4-4s-1.5-4-4-4c-2 0-3 1.5-4 3-1 1-2 1.5-3 1.5" />
-            <path d="M7.5 13C6 13 5 12 5 10.5S6 8 7.5 8c1.25 0 2 1 2.5 2M16.5 13c1.5 0 2.5-1 2.5-2.5S18 8 16.5 8c-1.25 0-2 1-2.5 2" />
-            <path d="M12 3v10" />
-          </svg>
-        </div>
-
-        <h2 className="text-[28px] font-bold text-[#0F172A] mb-1 text-center font-sans tracking-tight">
-          AsthmaCare
+        <h2 className="text-[26px] font-bold text-[#0F172A] mb-1 text-center tracking-tight">
+          Create Account
         </h2>
         <p className="text-[14px] text-slate-500 mb-8 text-center px-4">
           Start your journey to better breathing
         </p>
+
+        {error && (
+          <div className="w-full bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4 border border-red-100 text-center">
+            {error}
+          </div>
+        )}
 
         {/* Signup Form */}
         <div className="w-full space-y-4">
@@ -48,6 +101,8 @@ const Signup = () => {
               <Input 
                 type="text" 
                 placeholder="John Doe" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 className="h-12 bg-[#EEF2F4] border-transparent shadow-none text-[15px] placeholder:text-slate-400 rounded-xl pl-12"
               />
             </div>
@@ -64,6 +119,8 @@ const Signup = () => {
               <Input 
                 type="email" 
                 placeholder="name@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="h-12 bg-[#EEF2F4] border-transparent shadow-none text-[15px] placeholder:text-slate-400 rounded-xl pl-12"
               />
             </div>
@@ -80,9 +137,12 @@ const Signup = () => {
               <Input 
                 type={showPassword ? "text" : "password"} 
                 placeholder="Min. 8 characters" 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="h-12 bg-[#EEF2F4] border-transparent shadow-none text-[15px] placeholder:text-slate-400 rounded-xl pl-12 pr-12"
               />
               <button 
+                type="button"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
@@ -100,7 +160,12 @@ const Signup = () => {
                 <button
                   key={sev}
                   type="button"
-                  className="flex-1 py-3 rounded-xl text-[13px] font-bold bg-white border border-slate-200 text-slate-400 hover:border-[#2F5E60] hover:text-[#2F5E60] transition-all focus:bg-[#EAF1F2] focus:text-[#2F5E60] focus:border-[#2F5E60]"
+                  onClick={() => setSeverity(sev)}
+                  className={`flex-1 py-3 rounded-xl text-[13px] font-bold border transition-all ${
+                    severity === sev
+                      ? "bg-[#EAF1F2] text-[#2F5E60] border-[#2F5E60]"
+                      : "bg-white border-slate-200 text-slate-400 hover:border-[#2F5E60] hover:text-[#2F5E60]"
+                  }`}
                 >
                   {sev}
                 </button>
@@ -119,9 +184,10 @@ const Signup = () => {
 
           <Button 
             className="w-full h-14 bg-[#2F5E60] hover:bg-[#254A4C] text-[16px] font-semibold text-white rounded-xl shadow-sm mt-4" 
-            onClick={() => navigate('/')}
+            onClick={handleSignup}
+            disabled={isLoading}
           >
-            Sign Up
+            {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>
 
           {/* Divider */}
@@ -136,6 +202,7 @@ const Signup = () => {
 
           <Button 
             variant="outline" 
+            onClick={handleGoogleLogin}
             className="w-full h-14 bg-[#E5E7EB] hover:bg-[#D1D5DB] border-transparent text-slate-700 text-[15px] font-semibold rounded-xl flex items-center justify-center gap-3"
           >
             <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">

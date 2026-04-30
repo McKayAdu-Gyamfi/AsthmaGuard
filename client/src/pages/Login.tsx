@@ -7,82 +7,135 @@ import { Input } from '@/components/ui/input';
 const Login = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) return setError('Please enter both email and password.');
+    setError('');
+    setIsLoading(true);
+    try {
+      const res = await fetch('/api/auth/sign-in/email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.message || 'Login failed. Please check your credentials.');
+      } else {
+        // Force reload to get updated session state in App.tsx / ProtectedRoutes
+        window.location.href = '/';
+      }
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      const res = await fetch('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: 'google',
+          callbackURL: window.location.origin
+        })
+      });
+      
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else if (!res.ok) {
+        setError('Google login is not properly configured. Check your server environment variables.');
+      }
+    } catch (err) {
+      setError('Failed to initiate Google login.');
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F6F8F9] flex flex-col px-6 py-6 pb-12 relative overflow-y-auto">
-      {/* Top Bar Navigation */}
-      <div className="flex items-center justify-between mb-10">
-        <button className="p-2 -ml-2" onClick={() => navigate(-1)}>
-          <X className="w-5 h-5 text-slate-800" />
-        </button>
-        <h1 className="text-[17px] font-semibold text-slate-900 absolute left-1/2 -translate-x-1/2">
-          Tackling Asthma
-        </h1>
-        <div className="w-9" /> {/* Spacer */}
-      </div>
+      {/* Spacer to replace top bar */}
+      <div className="h-10 mb-6"></div>
 
-      <div className="flex flex-col items-center flex-1">
-        {/* Logo / Icon */}
-        <div className="w-20 h-20 rounded-2xl bg-[#D2DFE0] flex items-center justify-center mb-8 shadow-sm">
-          {/* Custom SVG for Lungs Icon matching screenshot */}
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-[#2F5E60] fill-[#2F5E60]">
-            <path d="M12 21.5c-1.5-2.5-4-4.5-7-4.5-2.5 0-4-1.5-4-4s1.5-4 4-4c2 0 3 1.5 4 3 1 1 2 1.5 3 1.5M12 21.5c1.5-2.5 4-4.5 7-4.5 2.5 0 4-1.5 4-4s-1.5-4-4-4c-2 0-3 1.5-4 3-1 1-2 1.5-3 1.5" />
-            <path d="M7.5 13C6 13 5 12 5 10.5S6 8 7.5 8c1.25 0 2 1 2.5 2M16.5 13c1.5 0 2.5-1 2.5-2.5S18 8 16.5 8c-1.25 0-2 1-2.5 2" />
-            <path d="M12 3v10" />
-          </svg>
+      <div className="flex flex-col items-center flex-1 w-full max-w-sm mx-auto">
+        {/* Brand Logo */}
+        <div className="flex items-center gap-3 mb-10">
+          <img src="/favicon.png" alt="AsthmaGuard Icon" className="w-12 h-12 object-contain" />
+          <div className="flex flex-col justify-center">
+            <h1 className="text-[26px] font-bold text-[#044E45] leading-none tracking-tight">AsthmaGuard</h1>
+            <p className="text-[13px] text-slate-500 font-medium leading-tight mt-1">Breathe easy. Stay protected.</p>
+          </div>
         </div>
 
         {/* Heading */}
-        <h2 className="text-[32px] md:text-[34px] font-bold text-[#0F172A] mb-3 text-center tracking-tight">
+        <h2 className="text-[28px] font-bold text-[#0F172A] mb-3 text-center tracking-tight">
           Welcome Back
         </h2>
-        <p className="text-[15px] text-[#475569] mb-10 text-center">
-          Manage your respiratory health with ease.
+        <p className="text-[14px] text-[#475569] mb-8 text-center">
+          Log in to manage your respiratory health.
         </p>
 
+        {error && (
+          <div className="w-full bg-red-50 text-red-600 text-sm p-3 rounded-xl mb-4 border border-red-100 text-center">
+            {error}
+          </div>
+        )}
+
         {/* Form */}
-        <div className="w-full space-y-6">
-          <div className="space-y-2">
-            <label className="text-[14px] font-medium text-[#1E293B]">
-              Email or Phone
+        <div className="w-full space-y-5">
+          <div className="space-y-1.5">
+            <label className="text-[13px] font-semibold text-[#1E293B] ml-1">
+              Email Address
             </label>
             <Input 
-              type="text" 
-              placeholder="Enter your email or phone number" 
-              className="h-14 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl"
+              type="email" 
+              placeholder="name@example.com" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="h-12 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl"
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-[14px] font-medium text-[#1E293B]">
+          <div className="space-y-1.5">
+            <label className="text-[13px] font-semibold text-[#1E293B] ml-1">
               Password
             </label>
             <div className="relative">
               <Input 
                 type={showPassword ? "text" : "password"} 
                 placeholder="Enter your password" 
-                className="h-14 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl pr-12"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="h-12 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl pr-12"
               />
               <button 
+                type="button"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
           </div>
           
           <div className="flex justify-end">
-            <button className="text-[14px] font-medium text-[#2F5E60] hover:underline">
+            <button type="button" className="text-[13px] font-medium text-[#2F5E60] hover:underline">
               Forgot password?
             </button>
           </div>
 
           <Button 
             className="w-full h-14 bg-[#2F5E60] hover:bg-[#254A4C] text-[16px] font-semibold text-white rounded-xl shadow-sm mt-2" 
-            onClick={() => navigate('/')}
+            onClick={handleLogin}
+            disabled={isLoading}
           >
-            Log In
+            {isLoading ? 'Logging In...' : 'Log In'}
           </Button>
         </div>
 
@@ -98,6 +151,7 @@ const Login = () => {
 
         <Button 
           variant="outline" 
+          onClick={handleGoogleLogin}
           className="w-full h-14 bg-white hover:bg-slate-50 border-slate-200 text-slate-700 text-[15px] font-semibold rounded-xl shadow-sm flex items-center justify-center gap-3"
         >
           <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
