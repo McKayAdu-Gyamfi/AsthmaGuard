@@ -5,6 +5,7 @@ import { auth } from "./src/config/auth.js";
 import { toNodeHandler } from "better-auth/node";
 import apiRoutes from "./src/routes/index.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
+import { pool } from "./src/config/db.js";
 
 dotenv.config();
 
@@ -35,8 +36,18 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 4000;
 
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  app.listen(PORT, async () => {
+    console.log(`🚀 Server running on port ${PORT}`);
+
+    // Verify database connection
+    try {
+      const client = await pool.connect();
+      const result = await client.query("SELECT NOW() AS time");
+      client.release();
+      console.log(`✅ Database connected successfully — server time: ${result.rows[0].time}`);
+    } catch (err) {
+      console.error("❌ Database connection FAILED:", err.message);
+    }
   });
 }
 

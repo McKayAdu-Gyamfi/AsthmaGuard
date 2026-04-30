@@ -2,10 +2,11 @@
   "name": "software-engineering-final-project",
   "version": "1.0.0",
   "description": "This is the repo we will be using for our final project about a system for providing help to asthmatics and the bystanders in case it happes in public",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -36,6 +37,7 @@
   "type": "module",
   "devDependencies": {
     "@better-auth/cli": "^1.4.21",
+    "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.4"
   }

@@ -156,7 +156,7 @@ const AISupport = () => {
   ];
 
   return (
-    <div className="h-[100dvh] w-full bg-[#F4F5F9] flex flex-col font-sans relative overflow-hidden">
+    <div className="absolute inset-0 md:bottom-0 bottom-[75px] bg-[#F4F5F9] flex flex-col font-sans overflow-hidden z-40">
       {/* Top Bar: Online Status & Compact Emergency Button */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 bg-[#F4F5F9] z-10">
          <div className="flex items-center gap-1.5 bg-[#DDF2E4] px-3 py-1.5 rounded-full shadow-sm">
@@ -238,7 +238,7 @@ const AISupport = () => {
       </div>
 
       {/* Bottom Input Area with Quick Options */}
-      <div className="absolute bottom-6 left-6 right-6 z-20 flex flex-col gap-3">
+      <div className="absolute bottom-4 left-4 right-4 z-20 flex flex-col gap-3">
          {/* Quick Options */}
          <div className="flex overflow-x-auto gap-2 pb-1 scrollbar-none w-full">
             {commonQuestions.map((q, i) => (

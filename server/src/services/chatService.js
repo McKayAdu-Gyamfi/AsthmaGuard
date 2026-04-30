@@ -35,7 +35,7 @@ export const getChatResponse = async (messages) => {
       return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Google Gemini API key is missing. Add a valid GOOGLE_API_KEY to server/.env for real AI responses.)*";
     }
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     // Format messages for the API
     let history = messages.slice(0, -1).map(msg => ({
@@ -80,12 +80,8 @@ export const getChatResponse = async (messages) => {
   } catch (error) {
     console.error("Chat service error:", error);
     
-    // Fallback if the API key is invalid or quota exceeded so the UI doesn't break
-    if (error.message.includes('API_KEY_INVALID') || error.message.includes('API key not valid')) {
-      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Google Gemini API key is invalid. Update your GOOGLE_API_KEY in server/.env for real AI responses.)*";
-    }
-    
-    throw new Error("Failed to get AI response: " + error.message);
+    // Fallback on ANY API error (invalid key, quota exceeded, model not found, etc.)
+    return getMockResponse(messages) + `\n\n*(Note: This is a simulated response because the Gemini API failed: ${error.message})*`;
   }
 };
 
