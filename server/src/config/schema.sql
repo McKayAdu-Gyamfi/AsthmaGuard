@@ -1,51 +1,52 @@
 -- ============================================================
--- Better Auth Core Schema (camelCase — required by Better Auth v1+)
+-- Better Auth Core Schema (Snake Case — Best for PostgreSQL)
 -- ============================================================
 
 CREATE TABLE "user" (
     id               TEXT PRIMARY KEY,
     name             TEXT NOT NULL,
     email            TEXT NOT NULL UNIQUE,
-    "emailVerified"  BOOLEAN NOT NULL DEFAULT FALSE,
+    email_verified   BOOLEAN NOT NULL DEFAULT FALSE,
     image            TEXT,
-    "createdAt"      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    "updatedAt"      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE "session" (
     id           TEXT PRIMARY KEY,
-    "userId"     TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    user_id      TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     token        TEXT NOT NULL UNIQUE,
-    "expiresAt"  TIMESTAMPTZ NOT NULL,
-    "ipAddress"  TEXT,
-    "userAgent"  TEXT,
-    "createdAt"  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    "updatedAt"  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    expires_at   TIMESTAMPTZ NOT NULL,
+    ip_address   TEXT,
+    user_agent   TEXT,
+    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE "account" (
-    id                       TEXT PRIMARY KEY,
-    "accountId"              TEXT NOT NULL,
-    "providerId"             TEXT NOT NULL,
-    "userId"                 TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
-    "accessToken"            TEXT,
-    "refreshToken"           TEXT,
-    "idToken"                TEXT,
-    "accessTokenExpiresAt"   TIMESTAMPTZ,
-    "refreshTokenExpiresAt"  TIMESTAMPTZ,
-    scope                    TEXT,
-    password                 TEXT,
-    "createdAt"              TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    "updatedAt"              TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    id                        TEXT PRIMARY KEY,
+    account_id                TEXT NOT NULL,
+    provider_id               TEXT NOT NULL,
+    user_id                   TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+    access_token              TEXT,
+    refresh_token             TEXT,
+    id_token                  TEXT,
+    access_token_expires_at   TIMESTAMPTZ,
+    refresh_token_expires_at  TIMESTAMPTZ,
+    scope                     TEXT,
+    password                  TEXT,
+    created_at                TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at                TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE "verification" (
+    
     id           TEXT PRIMARY KEY,
     identifier   TEXT NOT NULL,
     value        TEXT NOT NULL,
-    "expiresAt"  TIMESTAMPTZ NOT NULL,
-    "createdAt"  TIMESTAMPTZ DEFAULT NOW(),
-    "updatedAt"  TIMESTAMPTZ DEFAULT NOW()
+    expires_at   TIMESTAMPTZ NOT NULL,
+    created_at   TIMESTAMPTZ DEFAULT NOW(),
+    updated_at   TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ============================================================
@@ -104,7 +105,6 @@ CREATE TABLE emergencies (
 -- ============================================================
 
 CREATE TABLE symptoms (
-
     id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id    TEXT        NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     type       TEXT        NOT NULL,
