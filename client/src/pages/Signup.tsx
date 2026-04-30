@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { authClient } from '@/lib/authClient';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -40,23 +41,12 @@ const Signup = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const res = await fetch('/api/auth/sign-in/social', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: 'google',
-          callbackURL: window.location.origin
-        })
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: window.location.origin,
       });
-      
-      const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
-      } else if (!res.ok) {
-        setError('Google login is not properly configured. Check your server environment variables.');
-      }
     } catch (err) {
-      setError('Failed to initiate Google login.');
+      setError('Failed to initiate Google login. Please try again.');
     }
   };
 
