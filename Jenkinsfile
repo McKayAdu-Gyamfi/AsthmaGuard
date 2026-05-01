@@ -68,7 +68,9 @@ pipeline {
                         'NODE_ENV=test',
                         'PORT=4000',
                         'BETTER_AUTH_SECRET=ci-test-secret',
-                        'BETTER_AUTH_URL=http://localhost:4000'
+                        'BETTER_AUTH_URL=http://localhost:4000',
+                        'SUPABASE_URL=https://uewfaexbptgjpukrvypt.supabase.co',
+                        'SUPABASE_KEY=sb_publishable_placeholder'
                     ]) {
                         sh 'npm run test:run'
                     }

@@ -9,6 +9,9 @@ if (!supabaseUrl || !supabaseKey) {
   console.warn('⚠️ Supabase credentials missing in environment variables.');
 }
 
-const supabase = createClient(supabaseUrl || '', supabaseKey || '');
+const supabase = createClient(
+  supabaseUrl || 'https://uewfaexbptgjpukrvypt.supabase.co', 
+  supabaseKey || 'sb_publishable_placeholder'
+);
 
 export default supabase;
