@@ -1,0 +1,85 @@
+.loader-container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F6F8F9;
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.loader-logo {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  z-index: 20;
+  opacity: 0;
+  animation: logoFadeIn 1s ease-out forwards;
+}
+
+.shield-background {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  /* Matching the shield shape from the logo */
+  width: 140px;
+  height: 150px;
+  background-color: #2F5E60; /* Exact brand green from favicon/signup */
+  border-radius: 20px 20px 80px 80px;
+  z-index: 10;
+  animation: shieldGrow 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 1.2s;
+}
+
+@keyframes logoFadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shieldGrow {
+  0% {
+    transform: translate(-50%, -50%) scale(0);
+    border-radius: 20px 20px 80px 80px;
+  }
+  40% {
+    transform: translate(-50%, -50%) scale(1.2);
+    border-radius: 20px 20px 80px 80px;
+  }
+  100% {
+    /* Scale enough to cover any screen size */
+    transform: translate(-50%, -50%) scale(30);
+    border-radius: 0;
+  }
+}
+
+.loader-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.loader-text {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: 600;
+  opacity: 0;
+  z-index: 25;
+  animation: textFadeIn 0.5s ease-out forwards;
+  animation-delay: 2.2s;
+  letter-spacing: 0.05em;
+}
+
+@keyframes textFadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
