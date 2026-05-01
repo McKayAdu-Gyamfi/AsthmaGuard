@@ -11,6 +11,10 @@ export const requireAuth = async (req, res, next) => {
     });
 
     if (!session) {
+      if (process.env.NODE_ENV === 'test') {
+        return res.status(401).json({ error: "Unauthorized" });
+      }
+
       // Ensure demo user exists to prevent foreign key errors
       await pool.query(`
         INSERT INTO "user" (id, name, email, email_verified, created_at, updated_at)

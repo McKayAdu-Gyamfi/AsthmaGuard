@@ -1,6 +1,22 @@
+<<<<<<< HEAD
 import Groq from "groq-sdk";
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+=======
+import OpenAI from "openai";
+
+// Lazily initialized so dotenv has time to load before we read env vars
+let _client = null;
+function getClient() {
+  if (!_client) {
+    _client = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: "https://api.groq.com/openai/v1",
+    });
+  }
+  return _client;
+}
+>>>>>>> 5f64bfbaab5093c90de4fbe26d51a3baa19819d3
 
 const ASTHMA_DOCTOR_SYSTEM_PROMPT = `You are an empathetic and knowledgeable Asthma Support Doctor. Your role is to:
 
@@ -30,6 +46,7 @@ IMPORTANT: If a user mentions they are having severe breathing difficulty, chest
 
 export const getChatResponse = async (messages) => {
   try {
+<<<<<<< HEAD
     if (!process.env.GROQ_API_KEY) {
       return getMockResponse(messages);
     }
@@ -46,14 +63,46 @@ export const getChatResponse = async (messages) => {
         { role: "system", content: ASTHMA_DOCTOR_SYSTEM_PROMPT },
         ...formattedMessages,
       ],
+=======
+    // If no key is configured, fallback immediately
+    if (!process.env.GROQ_API_KEY || process.env.GROQ_API_KEY === 'your_api_key_here') {
+      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the Groq API key is missing. Add a valid GROQ_API_KEY to server/.env for real AI responses.)*";
+    }
+
+    // Format messages for the OpenAI-compatible API
+    const formattedMessages = [
+      { role: "system", content: ASTHMA_DOCTOR_SYSTEM_PROMPT },
+      ...messages.map(msg => ({
+        role: msg.sender === 'user' ? 'user' : 'assistant',
+        content: msg.text,
+      }))
+    ];
+
+    const completion = await getClient().chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: formattedMessages,
+>>>>>>> 5f64bfbaab5093c90de4fbe26d51a3baa19819d3
       max_tokens: 1024,
       temperature: 0.7,
     });
 
+<<<<<<< HEAD
     return completion.choices[0]?.message?.content ?? getMockResponse(messages);
   } catch (error) {
     console.error("Chat service error:", error.message);
     return getMockResponse(messages);
+=======
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error("Chat service error:", error);
+
+    // Fallback if the API key is invalid so the UI doesn't break
+    if (error.status === 401 || (error.message && error.message.includes('API key'))) {
+      return getMockResponse(messages) + "\n\n*(Note: This is a simulated response because the xAI Grok API key is invalid. Update your XAI_API_KEY in server/.env for real AI responses.)*";
+    }
+
+    throw new Error("Failed to get AI response: " + error.message);
+>>>>>>> 5f64bfbaab5093c90de4fbe26d51a3baa19819d3
   }
 };
 

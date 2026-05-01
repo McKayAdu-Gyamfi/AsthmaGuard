@@ -2,12 +2,13 @@
   "name": "software-engineering-final-project",
   "version": "1.0.0",
   "description": "This is the repo we will be using for our final project about a system for providing help to asthmatics and the bystanders in case it happes in public",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "dev": "nodemon server.js"
   },
   "repository": {
     "type": "git",
@@ -33,12 +34,14 @@
     "helmet": "^8.1.0",
     "multer": "^2.1.1",
     "nodemailer": "^8.0.5",
+    "openai": "^6.35.0",
     "pg": "^8.20.0",
     "zod": "^4.3.6"
   },
   "type": "module",
   "devDependencies": {
     "@better-auth/cli": "^1.4.21",
+    "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
     "vitest": "^4.1.4"
   }

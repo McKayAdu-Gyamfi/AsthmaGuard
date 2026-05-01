@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { authClient } from '@/lib/authClient';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -38,23 +39,12 @@ const Login = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      const res = await fetch('/api/auth/sign-in/social', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider: 'google',
-          callbackURL: window.location.origin
-        })
+      await authClient.signIn.social({
+        provider: 'google',
+        callbackURL: window.location.origin,
       });
-      
-      const data = await res.json();
-      if (data?.url) {
-        window.location.href = data.url;
-      } else if (!res.ok) {
-        setError('Google login is not properly configured. Check your server environment variables.');
-      }
     } catch (err) {
-      setError('Failed to initiate Google login.');
+      setError('Failed to initiate Google login. Please try again.');
     }
   };
 
@@ -90,36 +80,44 @@ const Login = () => {
         {/* Form */}
         <div className="w-full space-y-5">
           <div className="space-y-1.5">
-            <label className="text-[13px] font-semibold text-[#1E293B] ml-1">
-              Email Address
+            <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1">
+              EMAIL ADDRESS
             </label>
-            <Input 
-              type="email" 
-              placeholder="name@example.com" 
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-12 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </div>
+              <Input
+                type="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="h-12 bg-[#EEF2F4] border-transparent shadow-none text-[15px] placeholder:text-slate-400 rounded-xl pl-12"
+              />
+            </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[13px] font-semibold text-[#1E293B] ml-1">
-              Password
+            <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1">
+              PASSWORD
             </label>
             <div className="relative">
-              <Input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Enter your password" 
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </div>
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="h-12 bg-white border-[#E2E8F0] shadow-sm text-[15px] placeholder:text-slate-400 rounded-xl pr-12"
+                className="h-12 bg-[#EEF2F4] border-transparent shadow-none text-[15px] placeholder:text-slate-400 rounded-xl pl-12 pr-12"
               />
-              <button 
+              <button
                 type="button"
                 className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff className="w-[18px] h-[18px]" /> : <Eye className="w-[18px] h-[18px]" />}
               </button>
             </div>
           </div>
@@ -177,7 +175,7 @@ const Login = () => {
           <a href="#" className="hover:text-slate-800">Terms of Service</a>
           <a href="#" className="hover:text-slate-800">Contact Support</a>
         </div>
-        <p>© 2024 AsthmaCare Respiratory Systems. All rights reserved.</p>
+        <p>© 2026 AsthmaCare Respiratory Systems. All rights reserved.</p>
       </div>
     </div>
   );
