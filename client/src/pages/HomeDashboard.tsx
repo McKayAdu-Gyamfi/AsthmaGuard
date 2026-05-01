@@ -44,10 +44,6 @@ const HomeDashboard = () => {
           if (risk.success) setRiskData(risk.data);
         }
 
-        if (userRes.ok) {
-          const user = await userRes.json();
-          if (user.success) setUserData(user.data);
-        }
 
         if (weeklyRes.ok) {
           const weekly = await weeklyRes.json();
