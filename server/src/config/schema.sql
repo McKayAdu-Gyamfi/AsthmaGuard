@@ -83,6 +83,7 @@ CREATE TABLE alerts (
 CREATE TABLE user_profiles (
     id                 TEXT        REFERENCES "user"(id) ON DELETE CASCADE PRIMARY KEY,
     location           TEXT        DEFAULT 'Accra, Ghana',
+    asthma_severity    TEXT        DEFAULT 'Moderate',
     latitude           DECIMAL     DEFAULT 5.6037,
     longitude          DECIMAL     DEFAULT -0.1870,
     notify_on_high     BOOLEAN     DEFAULT TRUE,

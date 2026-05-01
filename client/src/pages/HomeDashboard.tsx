@@ -1,33 +1,56 @@
 import { useState, useEffect } from 'react';
-import { Bell, Activity, AlertCircle, Wind, Thermometer, Droplets, ShieldCheck, Pill } from 'lucide-react';
+import { Bell, MapPin, Wind, ShieldCheck, Activity, Zap, Info, ChevronRight, AlertTriangle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { CircularProgress } from '@/components/CircularProgress';
+import { Button } from '@/components/ui/button';
+import { authClient } from '@/lib/auth-client';
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
   const [latestAlert, setLatestAlert] = useState<null | { id: string; risk_level: string; message: string; created_at: string; location?: string }>(null);
-  const [loadingAlert, setLoadingAlert] = useState(true);
+  const [riskData, setRiskData] = useState<any>(null);
+  const [userData, setUserData] = useState<any>(null);
+  const [weeklyData, setWeeklyData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadLatestAlert = async () => {
+    const fetchDashboardData = async () => {
       try {
-        const response = await fetch('/api/v1/alerts');
-        if (!response.ok) return;
-        const data = await response.json();
+        setLoading(true);
+        const [alertsRes, riskRes, userRes, weeklyRes] = await Promise.all([
+          fetch('/api/v1/alerts'),
+          fetch('/api/v1/risk'),
+          fetch('/api/v1/users/me'),
+          fetch('/api/v1/history/weekly')
+        ]);
 
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          setLatestAlert(data.data[0]);
+        if (alertsRes.ok) {
+          const alerts = await alertsRes.json();
+          if (alerts.success && alerts.data.length > 0) setLatestAlert(alerts.data[0]);
+        }
+
+        if (riskRes.ok) {
+          const risk = await riskRes.json();
+          if (risk.success) setRiskData(risk.data);
+        }
+
+        if (userRes.ok) {
+          const user = await userRes.json();
+          if (user.success) setUserData(user.data);
+        }
+
+        if (weeklyRes.ok) {
+          const weekly = await weeklyRes.json();
+          if (weekly.success) setWeeklyData(weekly.data);
         }
       } catch (error) {
-        console.error('Failed to load latest alert:', error);
+        console.error('Dashboard fetch error:', error);
       } finally {
-        setLoadingAlert(false);
+        setLoading(false);
       }
     };
 
-    loadLatestAlert();
+    fetchDashboardData();
   }, []);
 
   return (
@@ -36,19 +59,22 @@ const HomeDashboard = () => {
       {/* Header Profile Section */}
       <div className="flex items-center justify-between px-6 py-5 mt-2">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-[#D1E0E1]">
-             {/* Mock avatar from SVG */}
-             <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-               <rect width="100" height="100" fill="#E8D1C5"/>
-               {/* hair */}
-               <path d="M50 15C30 15 20 35 25 60C30 85 70 85 75 60C80 35 70 15 50 15Z" fill="#1e293b"/>
-               {/* face */}
-               <circle cx="50" cy="50" r="22" fill="#FCE7D9"/>
-             </svg>
+          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-[#D1E0E1] flex items-center justify-center">
+             {userData?.image ? (
+               <img src={userData.image} alt="Profile" className="w-full h-full object-cover" />
+             ) : (
+               <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+                 <rect width="100" height="100" fill="#E8D1C5"/>
+                 <path d="M50 15C30 15 20 35 25 60C30 85 70 85 75 60C80 35 70 15 50 15Z" fill="#1e293b"/>
+                 <circle cx="50" cy="50" r="22" fill="#FCE7D9"/>
+               </svg>
+             )}
           </div>
           <div>
-            <p className="text-[13px] text-[#475569]">Tuesday, Oct 24</p>
-            <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">Good Morning, Sarah</h1>
+            <p className="text-[13px] text-[#475569]">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+            <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">
+              Good Morning, {userData?.name?.split(' ')[0] || 'User'}
+            </h1>
           </div>
         </div>
         <button 
@@ -72,32 +98,41 @@ const HomeDashboard = () => {
           </Button>
           <Button 
             onClick={() => navigate('/asthma-attack')}
-            className="flex-1 h-14 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded-xl text-[15px] shadow-sm flex items-center justify-center gap-2 border border-red-100"
+            className="flex-1 h-14 bg-[#EF4444] hover:bg-[#DC2626] text-white font-semibold rounded-xl text-[15px] shadow-sm flex items-center justify-center gap-2"
           >
-            <AlertCircle className="w-5 h-5 fill-red-600/10" />
-            Emergency
+            <Zap className="w-5 h-5 fill-current" />
+            Emergency Mode
           </Button>
         </div>
 
-        {/* Big Air Quality Card */}
-        <div className="bg-[#EAF1F2] rounded-3xl p-6 mb-6">
+        {/* Dynamic Risk Display */}
+        <div className="bg-[#EAF1F2] rounded-[32px] p-8 mb-6 relative overflow-hidden shadow-sm border border-white">
+          <div className="absolute -right-6 -top-6 w-32 h-32 bg-[#0A5D64]/5 rounded-full blur-2xl"></div>
+          <div className="flex items-center justify-between mb-4">
+             <span className="text-[14px] font-bold text-[#0A5D64] tracking-wide uppercase opacity-70">Personal Risk Score</span>
+             <Info className="w-4 h-4 text-[#0A5D64]/50" />
+          </div>
           <div className="flex justify-center mb-6 pt-2">
             <CircularProgress 
-              value={85} 
-              text="85%" 
-              subtext="Good" 
+              value={riskData ? Math.round(riskData.mlProbability * 100) : 0} 
+              text={riskData ? `${Math.round(riskData.mlProbability * 100)}%` : '--'} 
+              subtext={riskData?.overallRisk || '...'} 
               size={130} 
               strokeWidth={10} 
-              color="#0A5D64" 
+              color={riskData?.overallRisk === 'LOW' ? '#10B981' : riskData?.overallRisk === 'MODERATE' ? '#F59E0B' : '#EF4444'} 
               backgroundColor="#D1E0E1" 
             />
           </div>
           <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 relative">
             <p className="text-[13px] text-[#64748B] mb-0.5">Outdoor Air Quality</p>
-            <h3 className="text-[17px] font-bold text-[#0F172A] mb-4">Excellent conditions today</h3>
+            <h3 className="text-[17px] font-bold text-[#0F172A] mb-4">
+              {riskData?.overallRisk === 'LOW' ? 'Excellent conditions today' : 
+               riskData?.overallRisk === 'MODERATE' ? 'Moderate conditions detected' : 
+               'High risk - exercise caution'}
+            </h3>
             <Wind className="absolute right-5 top-5 w-6 h-6 text-[#0A5D64]" />
             <div className="flex items-center justify-between mt-2 pt-4 border-t border-slate-100">
-               <span className="text-[12px] text-[#475569]">Based on your current location in Accra</span>
+               <span className="text-[12px] text-[#475569]">Based on current location in {riskData?.location || 'Accra'}</span>
                <Button 
                  variant="secondary" 
                  onClick={() => navigate('/insights')}
@@ -109,135 +144,82 @@ const HomeDashboard = () => {
           </div>
         </div>
 
-        {/* Smart Recommendations Section (New) */}
+        {/* Smart Recommendations Section */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4 px-1">
              <h4 className="text-[16px] font-bold text-slate-900">Today's Recommendations</h4>
              <ShieldCheck className="w-5 h-5 text-[#0A5D64]" />
           </div>
           <div className="space-y-3">
-             <Card className="p-4 rounded-2xl border-none shadow-sm bg-white flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                  <Wind className="w-5 h-5 text-blue-500" />
-                </div>
-                <p className="text-[13px] text-slate-600 font-medium">Keep windows closed during morning hours to avoid pollen.</p>
-             </Card>
-             <Card className="p-4 rounded-2xl border-none shadow-sm bg-white flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
-                  <Activity className="w-5 h-5 text-orange-500" />
-                </div>
-                <p className="text-[13px] text-slate-600 font-medium">High humidity detected. Stay in air-conditioned areas if possible.</p>
-             </Card>
+             {riskData?.advice?.actions?.length > 0 ? (
+               riskData.advice.actions.map((action: string, idx: number) => (
+                 <div key={idx} className="bg-white p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl bg-[#EAF1F2] flex items-center justify-center shrink-0">
+                       <CheckCircle2 className="w-5 h-5 text-[#0A5D64]" />
+                    </div>
+                    <p className="text-[14px] text-slate-600 font-medium leading-tight">{action}</p>
+                 </div>
+               ))
+             ) : (
+               <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-50 flex items-center gap-4">
+                 <div className="w-10 h-10 rounded-xl bg-[#EAF1F2] flex items-center justify-center shrink-0">
+                    <Info className="w-5 h-5 text-[#0A5D64]" />
+                 </div>
+                 <p className="text-[14px] text-slate-600 font-medium">Enjoy your day! Conditions are stable.</p>
+               </div>
+             )}
           </div>
         </div>
 
-        {/* Small Metrics grid */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-          <Card className="rounded-2xl border-none shadow-sm p-4 relative bg-white">
-            <div className="flex items-center justify-between mb-4">
-              <Thermometer className="w-5 h-5 text-[#F59E0B]" />
-              <span className="text-[11px] font-semibold text-slate-400">TEMP</span>
-            </div>
-            <p className="text-[22px] font-bold text-slate-900 mb-0.5">24°C</p>
-            <p className="text-[12px] text-slate-500">Indoor Comfort</p>
-          </Card>
-          <Card className="rounded-2xl border-none shadow-sm p-4 relative bg-white">
-            <div className="flex items-center justify-between mb-4">
-              <Droplets className="w-5 h-5 text-[#3B82F6]" />
-              <span className="text-[11px] font-semibold text-slate-400">HUMIDITY</span>
-            </div>
-            <p className="text-[22px] font-bold text-slate-900 mb-0.5">45%</p>
-            <p className="text-[12px] text-slate-500">Optimal Level</p>
-          </Card>
-        </div>
-
-        {/* Quick Links (New) */}
-        <div className="grid grid-cols-2 gap-4 mb-6">
-           <button 
-             onClick={() => navigate('/health')}
-             className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-3 transition-all hover:shadow-md"
-           >
-              <div className="w-12 h-12 rounded-2xl bg-[#EAF1F2] flex items-center justify-center">
-                <Pill className="w-6 h-6 text-[#0A5D64]" />
-              </div>
-              <span className="text-[14px] font-bold text-slate-800">My Meds</span>
-           </button>
-           <button 
-             onClick={() => navigate('/emergency-contacts')}
-             className="bg-white p-5 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center gap-3 transition-all hover:shadow-md"
-           >
-              <div className="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center">
-                <ShieldCheck className="w-6 h-6 text-red-500" />
-              </div>
-              <span className="text-[14px] font-bold text-slate-800">Emergency</span>
-           </button>
-        </div>
-
-        {/* Risk Level Banner */}
-        <Card className="rounded-3xl border-none shadow-sm p-5 mb-6 bg-white flex items-center justify-between gap-4">
-           <div>
-             <div className="flex items-center gap-2 mb-2">
-               <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]"></div>
-               <h4 className="text-[15px] font-bold text-slate-900 tracking-wide">LOW RISK (15%)</h4>
-             </div>
-             <p className="text-[13px] text-slate-500 leading-relaxed max-w-[240px]">
-               Your personalized asthma trigger risk is currently low. Great day for outdoor activities!
-             </p>
+        {/* Weekly Trend Preview */}
+        <div className="mb-8">
+           <div className="flex items-center justify-between mb-4 px-1">
+              <h4 className="text-[16px] font-bold text-slate-900">Weekly Forecast</h4>
+              <button onClick={() => navigate('/insights')} className="text-[12px] font-bold text-[#0A5D64] flex items-center gap-0.5">
+                 VIEW CHART <ChevronRight className="w-4 h-4" />
+              </button>
            </div>
-           <div className="w-12 h-12 rounded-2xl bg-[#EAF1F2] flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6 text-[#0A5D64]" />
+           <div className="flex justify-between bg-white p-6 rounded-[32px] shadow-sm border border-slate-50">
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, i) => (
+                <div key={i} className="flex flex-col items-center gap-2">
+                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold ${
+                     weeklyData[i]?.risk_level === 'HIGH' ? 'bg-red-100 text-red-600' : 
+                     weeklyData[i]?.risk_level === 'MODERATE' ? 'bg-orange-100 text-orange-600' :
+                     'bg-[#EAF1F2] text-[#0A5D64]'
+                   }`}>
+                      {day}
+                   </div>
+                   <div className={`w-1.5 rounded-full ${
+                     weeklyData[i]?.risk_level === 'HIGH' ? 'h-8 bg-red-400' : 
+                     weeklyData[i]?.risk_level === 'MODERATE' ? 'h-6 bg-orange-300' :
+                     'h-4 bg-[#0A5D64]/40'
+                   }`}></div>
+                </div>
+              ))}
            </div>
-        </Card>
-
-        {/* Latest Alert Card */}
-        <Card className="rounded-3xl border-none shadow-sm p-5 mb-6 bg-white">
-          <div className="flex items-center justify-between mb-3">
-            <div>
-              <p className="text-[12px] font-semibold uppercase tracking-[0.2em] text-slate-400">Latest Alert</p>
-              <h3 className="text-[17px] font-bold text-slate-900">{latestAlert ? `${latestAlert.risk_level} Risk Alert` : 'No active alerts'}</h3>
-            </div>
-            <span className="text-[12px] text-slate-500">{latestAlert ? new Date(latestAlert.created_at).toLocaleString() : loadingAlert ? 'Loading…' : 'Today'}</span>
-          </div>
-
-          <div className="text-[13px] text-slate-600 leading-relaxed">
-            {latestAlert
-              ? latestAlert.message
-              : (loadingAlert ? 'Checking your latest alerts...' : 'All conditions are currently stable. Continue monitoring air quality and symptoms.')}
-          </div>
-
-          {latestAlert?.location && (
-            <p className="mt-4 text-[12px] text-slate-400">Location: {latestAlert.location}</p>
-          )}
-        </Card>
-
-        {/* Weekly Progress */}
-        <Card className="rounded-3xl border-none shadow-sm p-5 mb-2 bg-white">
-          <div className="flex items-center justify-between mb-8">
-            <h4 className="text-[16px] font-bold text-slate-900">Weekly Progress</h4>
-            <button className="text-[12px] font-bold text-[#0A5D64]">View Trends</button>
-          </div>
-          
-          <div className="flex items-end justify-between h-[100px] gap-2">
-            {[
-              { day: 'MON', h: '30%', color: 'bg-slate-100' },
-              { day: 'TUE', h: '40%', color: 'bg-slate-100' },
-              { day: 'WED', h: '25%', color: 'bg-[#82A8A9]' },
-              { day: 'THU', h: '35%', color: 'bg-[#679697]' },
-              { day: 'FRI', h: '55%', color: 'bg-[#0A5D64]' },
-              { day: 'SAT', h: '45%', color: 'bg-[#3C7B7C]' },
-              { day: 'SUN', h: '65%', color: 'bg-[#0A5D64]' }
-            ].map(col => (
-              <div key={col.day} className="flex flex-col items-center gap-3 flex-1">
-                 <div className={`w-full ${col.color} rounded-sm transition-all`} style={{ height: col.h }}></div>
-                 <span className="text-[10px] font-semibold text-slate-400">{col.day}</span>
-              </div>
-            ))}
-          </div>
-        </Card>
-
+        </div>
       </div>
     </div>
   );
 };
+
+// Helper component for CheckCircle2 (missing in imports in original but used in loop)
+const CheckCircle2 = ({ className }: { className?: string }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width="24" 
+    height="24" 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round" 
+    className={className}
+  >
+    <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
+    <path d="m9 12 2 2 4-4" />
+  </svg>
+);
 
 export default HomeDashboard;

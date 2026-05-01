@@ -1,3 +1,3 @@
 declare module 'tyger-avatar' {
-  export const TygerAvatar: React.FC<{ name: string; size?: string }>;
+  export const TygerAvatar: React.FC<{ seed: string; className?: string }>;
 }

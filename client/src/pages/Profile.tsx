@@ -86,17 +86,16 @@ const Profile = () => {
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [tempName, setTempName] = useState('');
-  const [tempAvatarSeed, setTempAvatarSeed] = useState(() => {
-    const saved = localStorage.getItem('avatar_seed');
-    return (saved && saved.startsWith('Tr')) ? saved : 'TrFelix';
-  });
+  const [tempAvatarSeed, setTempAvatarSeed] = useState(() => localStorage.getItem('avatar_seed') || 'Felix');
 
   const [isEditingSeverity, setIsEditingSeverity] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
+  const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
     const fetchSession = async () => {
       try {
+        setIsPending(true);
         const res = await fetch('/api/auth/get-session');
         if (!res.ok) return;
         const data = await res.json();
@@ -104,10 +103,12 @@ const Profile = () => {
           setUser(data.user);
           setProfileData((prev: any) => ({ ...prev, name: data.user.name, email: data.user.email }));
           setTempName(data.user.name);
-          setTempAvatarSeed(localStorage.getItem('avatar_seed') || 'Felix');
+          setTempAvatarSeed(localStorage.getItem('avatar_seed') || data.user.image || 'avatar-1');
         }
       } catch {
         // Backend offline — silently ignore
+      } finally {
+        setIsPending(false);
       }
     };
     fetchSession();
@@ -120,7 +121,7 @@ const Profile = () => {
 
   const openEditPopup = () => {
     setTempName(profileData.name);
-    setTempAvatarSeed(localStorage.getItem('avatar_seed') || 'Felix');
+    setTempAvatarSeed(localStorage.getItem('avatar_seed') || user?.image || 'avatar-1');
     setShowEditPopup(true);
   };
 
@@ -156,6 +157,8 @@ const Profile = () => {
       localStorage.setItem('asthma_location', profileData.location);
     }
   };
+
+  if (isPending) return <div className="min-h-screen flex items-center justify-center bg-[#F6F8F9]">Loading...</div>;
 
   return (
     <div className="min-h-screen bg-[#F6F8F9] pb-24">
