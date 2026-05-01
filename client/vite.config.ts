@@ -21,6 +21,6 @@ export default defineConfig({
     }
   },
   optimizeDeps: {
-    include: ['tyger-avatar']
+    include: ['tyger-avatar', 'react-markdown']
   }
 });
