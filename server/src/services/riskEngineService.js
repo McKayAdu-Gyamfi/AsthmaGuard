@@ -537,6 +537,7 @@ function assessRisk(env) {
     factors:      ruleResult.factors,
     alerts:       ruleResult.alerts,
     advice,
+    raw:          env,
     timestamp:    new Date().toISOString(),
   };
 }

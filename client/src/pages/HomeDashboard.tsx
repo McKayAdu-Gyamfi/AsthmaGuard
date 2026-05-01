@@ -15,7 +15,7 @@ const HomeDashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchDashboardData = async (lat?: number, lon?: number) => {
       try {
         setLoading(true);
         
@@ -28,9 +28,10 @@ const HomeDashboard = () => {
           }
         }
 
+        const queryParams = lat && lon ? `?lat=${lat}&lon=${lon}` : '';
         const [alertsRes, riskRes, weeklyRes] = await Promise.all([
           fetch('/api/v1/alerts'),
-          fetch('/api/v1/risk'),
+          fetch(`/api/v1/risk${queryParams}`),
           fetch('/api/v1/history/weekly')
         ]);
 
@@ -44,7 +45,6 @@ const HomeDashboard = () => {
           if (risk.success) setRiskData(risk.data);
         }
 
-
         if (weeklyRes.ok) {
           const weekly = await weeklyRes.json();
           if (weekly.success) setWeeklyData(weekly.data);
@@ -56,7 +56,19 @@ const HomeDashboard = () => {
       }
     };
 
-    fetchDashboardData();
+    // Get user location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchDashboardData(position.coords.latitude, position.coords.longitude);
+        },
+        () => {
+          fetchDashboardData(); // Fallback to default
+        }
+      );
+    } else {
+      fetchDashboardData();
+    }
   }, []);
 
   return (

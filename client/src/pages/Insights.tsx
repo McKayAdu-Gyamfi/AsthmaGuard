@@ -12,10 +12,11 @@ const Insights = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchInsightsData = async () => {
+    const fetchInsightsData = async (lat?: number, lon?: number) => {
       try {
+        const queryParams = lat && lon ? `?lat=${lat}&lon=${lon}` : '';
         const [riskRes, weeklyRes] = await Promise.all([
-          fetch('/api/v1/risk'),
+          fetch(`/api/v1/risk${queryParams}`),
           fetch('/api/v1/history/weekly')
         ]);
 
@@ -35,7 +36,19 @@ const Insights = () => {
       }
     };
 
-    fetchInsightsData();
+    // Get user location
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          fetchInsightsData(position.coords.latitude, position.coords.longitude);
+        },
+        () => {
+          fetchInsightsData(); // Fallback to default
+        }
+      );
+    } else {
+      fetchInsightsData();
+    }
   }, []);
 
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];

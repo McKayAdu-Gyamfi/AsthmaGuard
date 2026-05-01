@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export async function getWeather(lat, lon) {
-  const apiKey = process.env.OPENWEATHER_API_KEY;
+  const apiKey = process.env.WEATHER_API_KEY;
 
   try {
     const response = await axios.get(
@@ -23,7 +23,8 @@ export async function getWeather(lat, lon) {
       humidity:    data.main.humidity,
       feels_like:  data.main.feels_like,
       description: data.weather[0].description,
-      wind_speed:  data.wind.speed
+      wind_speed:  data.wind.speed,
+      location:    data.name
     };
 
   } catch (error) {
