@@ -50,7 +50,7 @@ const getValidAvatarName = (name?: string) => {
 const ProfileAvatar = ({ seed }: { seed?: string }) => {
   return (
     <TygerAvatar 
-      seed={getValidAvatarName(seed)} 
+      name={getValidAvatarName(seed)} 
     />
   );
 };
@@ -66,7 +66,7 @@ const PickerAvatar = ({ seed, selected, onClick }: { seed: string; selected: boo
     >
       <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
         <TygerAvatar 
-          seed={seed} 
+          name={seed} 
         />
       </div>
     </button>

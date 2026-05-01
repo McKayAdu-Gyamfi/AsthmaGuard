@@ -12,7 +12,7 @@ const UserAvatar = ({ seed }: { seed?: string }) => {
   return (
     <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
       <TygerAvatar 
-        seed={validName} 
+        name={validName} 
       />
     </div>
   );

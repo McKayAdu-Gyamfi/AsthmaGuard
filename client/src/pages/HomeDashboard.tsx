@@ -7,6 +7,7 @@ import { authClient } from '@/lib/auth-client';
 
 const HomeDashboard = () => {
   const navigate = useNavigate();
+  const { data: session } = authClient.useSession();
   const [latestAlert, setLatestAlert] = useState<null | { id: string; risk_level: string; message: string; created_at: string; location?: string }>(null);
   const [riskData, setRiskData] = useState<any>(null);
   const [userData, setUserData] = useState<any>(null);
@@ -17,10 +18,19 @@ const HomeDashboard = () => {
     const fetchDashboardData = async () => {
       try {
         setLoading(true);
-        const [alertsRes, riskRes, userRes, weeklyRes] = await Promise.all([
+        
+        // Fetch session data first to get the user's name
+        const sessionRes = await fetch('/api/auth/get-session');
+        if (sessionRes.ok) {
+          const sessionData = await sessionRes.json();
+          if (sessionData?.user) {
+            setUserData(sessionData.user);
+          }
+        }
+
+        const [alertsRes, riskRes, weeklyRes] = await Promise.all([
           fetch('/api/v1/alerts'),
           fetch('/api/v1/risk'),
-          fetch('/api/v1/users/me'),
           fetch('/api/v1/history/weekly')
         ]);
 
@@ -58,24 +68,11 @@ const HomeDashboard = () => {
       
       {/* Header Profile Section */}
       <div className="flex items-center justify-between px-6 py-5 mt-2">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-[#D1E0E1] flex items-center justify-center">
-             {userData?.image ? (
-               <img src={userData.image} alt="Profile" className="w-full h-full object-cover" />
-             ) : (
-               <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-                 <rect width="100" height="100" fill="#E8D1C5"/>
-                 <path d="M50 15C30 15 20 35 25 60C30 85 70 85 75 60C80 35 70 15 50 15Z" fill="#1e293b"/>
-                 <circle cx="50" cy="50" r="22" fill="#FCE7D9"/>
-               </svg>
-             )}
-          </div>
-          <div>
-            <p className="text-[13px] text-[#475569]">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
-            <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">
-              Good Morning, {userData?.name?.split(' ')[0] || 'User'}
-            </h1>
-          </div>
+        <div className="flex flex-col">
+          <p className="text-[13px] text-[#475569]">{new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}</p>
+          <h1 className="text-[18px] font-bold text-[#0F172A] tracking-tight">
+            Good Morning, {userData?.name?.split(' ')[0] || 'User'}
+          </h1>
         </div>
         <button 
           onClick={() => navigate('/alerts-history')}
