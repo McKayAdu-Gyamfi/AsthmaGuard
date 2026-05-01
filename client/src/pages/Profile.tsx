@@ -5,21 +5,29 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { TygerAvatar } from 'tyger-avatar';
+import 'tyger-avatar/lib/bundle/styles.css';
 
 /** Palette for avatar color circles in the picker */
 const AVATAR_OPTIONS = [
-  { seed: 'avatar-1',     color: '#5B8FF9' },
-  { seed: 'avatar-2',    color: '#E96D6D' },
-  { seed: 'avatar-3',  color: '#F4A261' },
-  { seed: 'avatar-4',  color: '#2A9D8F' },
-  { seed: 'avatar-5',    color: '#6A4C93' },
-  { seed: 'avatar-6',    color: '#264653' },
-  { seed: 'avatar-7',  color: '#E76F51' },
-  { seed: 'avatar-8', color: '#457B9D' },
-  { seed: 'avatar-9',   color: '#A8DADC' },
-  { seed: 'avatar-10',      color: '#F1FAEE' },
-  { seed: 'avatar-11',  color: '#1D3557' },
-  { seed: 'avatar-12',     color: '#0A5D64' },
+  { seed: 'TrAlex',     color: '#5B8FF9' },
+  { seed: 'TrFelix',    color: '#E96D6D' },
+  { seed: 'TrSamantha',  color: '#F4A261' },
+  { seed: 'TrEnrique',  color: '#2A9D8F' },
+  { seed: 'TrSophia',    color: '#6A4C93' },
+  { seed: 'TrHarry',    color: '#264653' },
+  { seed: 'TrMaria',  color: '#E76F51' },
+  { seed: 'TrTorsten', color: '#457B9D' },
+  { seed: 'TrIggy',   color: '#A8DADC' },
+  { seed: 'TrStu',      color: '#8ecae6' },
+  { seed: 'TrChelsea',  color: '#1D3557' },
+  { seed: 'TrEric',     color: '#0A5D64' },
+  { seed: 'TrFranklin', color: '#34A853' },
+  { seed: 'TrImran',    color: '#FBBC05' },
+  { seed: 'TrRachel',   color: '#EA4335' },
+  { seed: 'TrShamila',  color: '#6A5AE0' },
+  { seed: 'TrHelen',    color: '#FF6B6B' },
+  { seed: 'TrNancy',    color: '#4ECDC4' },
+  { seed: 'TrChad',     color: '#FFD93D' },
 ];
 
 /** Returns background colour for a given avatar seed */
@@ -32,30 +40,38 @@ const getInitials = (name?: string) =>
     ? name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
     : 'G';
 
+/** Validates and sanitizes the avatar name for the TygerAvatar library */
+const getValidAvatarName = (name?: string) => {
+  if (!name || !name.startsWith('Tr')) return 'TrFelix';
+  return name;
+};
+
 /** Full-size avatar used on the profile header */
-const ProfileAvatar = ({ seed }: { seed?: string }) => (
-  <TygerAvatar 
-    seed={seed || 'avatar-1'} 
-    className="w-full h-full"
-  />
-);
+const ProfileAvatar = ({ seed }: { seed?: string }) => {
+  return (
+    <TygerAvatar 
+      name={getValidAvatarName(seed) as any} 
+    />
+  );
+};
 
 /** Small avatar circle used in the picker grid */
-const PickerAvatar = ({ seed, selected, onClick }: { seed: string; selected: boolean; onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 bg-slate-50 ${
-      selected ? 'ring-4 ring-[#0A5D64] ring-offset-2 scale-105 z-10' : 'hover:scale-105 hover:shadow-md'
-    }`}
-  >
-    <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
-      <TygerAvatar 
-        seed={seed} 
-        className="w-full h-full object-contain"
-      />
-    </div>
-  </button>
-);
+const PickerAvatar = ({ seed, selected, onClick }: { seed: string; selected: boolean; onClick: () => void }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 bg-slate-50 ${
+        selected ? 'ring-4 ring-[#0A5D64] ring-offset-2 scale-105 z-10' : 'hover:scale-105 hover:shadow-md'
+      }`}
+    >
+      <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
+        <TygerAvatar 
+          name={seed as any} 
+        />
+      </div>
+    </button>
+  );
+};
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -70,7 +86,10 @@ const Profile = () => {
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [tempName, setTempName] = useState('');
-  const [tempAvatarSeed, setTempAvatarSeed] = useState(() => localStorage.getItem('avatar_seed') || 'Felix');
+  const [tempAvatarSeed, setTempAvatarSeed] = useState(() => {
+    const saved = localStorage.getItem('avatar_seed');
+    return (saved && saved.startsWith('Tr')) ? saved : 'TrFelix';
+  });
 
   const [isEditingSeverity, setIsEditingSeverity] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -121,6 +140,10 @@ const Profile = () => {
       });
       
       setUser((prev: any) => ({ ...prev, name: tempName, image: tempAvatarSeed }));
+      
+      // Notify other components (like AppLayout) to refresh avatar
+      window.dispatchEvent(new Event('avatarChanged'));
+      
       setShowEditPopup(false);
     } catch (err) {
       console.error('Failed to update profile:', err);
@@ -155,13 +178,13 @@ const Profile = () => {
 
               <div>
                 <label className="text-[12px] font-bold text-slate-500 mb-2 tracking-wider block">CHOOSE AVATAR</label>
-                <div className="grid grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  {AVATAR_OPTIONS.map(({ seed }) => (
+                <div className="grid grid-cols-4 gap-3 max-h-[280px] overflow-y-auto pr-2 scrollbar-none">
+                  {AVATAR_OPTIONS.map((opt) => (
                     <PickerAvatar
-                      key={seed}
-                      seed={seed}
-                      selected={tempAvatarSeed === seed}
-                      onClick={() => setTempAvatarSeed(seed)}
+                      key={opt.seed}
+                      seed={opt.seed}
+                      selected={tempAvatarSeed === opt.seed}
+                      onClick={() => setTempAvatarSeed(opt.seed)}
                     />
                   ))}
                 </div>
@@ -222,17 +245,22 @@ const Profile = () => {
               {!isEditingSeverity ? (
                 <button onClick={() => setIsEditingSeverity(true)} className="text-[12px] font-bold text-[#0A5D64] hover:underline">Change</button>
               ) : (
-                <div className="flex gap-1">
-                  {['Mild', 'Moderate', 'Severe'].map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => { setProfileData({ ...profileData, severity: s }); localStorage.setItem('asthma_severity', s); setIsEditingSeverity(false); }}
-                      className="text-[10px] px-2 py-1 bg-white border border-slate-200 rounded-md font-bold hover:border-[#0A5D64] hover:text-[#0A5D64] transition-colors shadow-sm"
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
+                <select
+                  value={profileData.severity}
+                  onChange={(e) => {
+                    const s = e.target.value;
+                    setProfileData({ ...profileData, severity: s });
+                    localStorage.setItem('asthma_severity', s);
+                    setIsEditingSeverity(false);
+                  }}
+                  onBlur={() => setIsEditingSeverity(false)}
+                  autoFocus
+                  className="text-[12px] px-3 py-1.5 bg-white border border-slate-200 rounded-xl font-bold text-[#0A5D64] shadow-sm focus:ring-2 focus:ring-[#0A5D64] focus:border-transparent outline-none transition-all"
+                >
+                  <option value="Mild">Mild</option>
+                  <option value="Moderate">Moderate</option>
+                  <option value="Severe">Severe</option>
+                </select>
               )}
             </div>
 

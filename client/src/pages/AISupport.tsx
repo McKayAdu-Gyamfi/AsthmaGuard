@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { ArrowLeft, Paperclip, Sparkles, Mic, Send, Zap, AlertCircle } from 'lucide-react';
+import { Paperclip, Sparkles, Mic, Send, Zap, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 type Message = {

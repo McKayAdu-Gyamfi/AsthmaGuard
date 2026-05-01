@@ -4,20 +4,28 @@ import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TygerAvatar } from 'tyger-avatar';
+import 'tyger-avatar/lib/bundle/styles.css';
 
 const AVATAR_OPTIONS = [
-  { seed: 'avatar-1',     color: '#5B8FF9' },
-  { seed: 'avatar-2',    color: '#E96D6D' },
-  { seed: 'avatar-3',  color: '#F4A261' },
-  { seed: 'avatar-4',  color: '#2A9D8F' },
-  { seed: 'avatar-5',    color: '#6A4C93' },
-  { seed: 'avatar-6',    color: '#264653' },
-  { seed: 'avatar-7',  color: '#E76F51' },
-  { seed: 'avatar-8', color: '#457B9D' },
-  { seed: 'avatar-9',   color: '#A8DADC' },
-  { seed: 'avatar-10',      color: '#8ecae6' },
-  { seed: 'avatar-11',  color: '#1D3557' },
-  { seed: 'avatar-12',     color: '#0A5D64' },
+  { seed: 'TrAlex',     color: '#5B8FF9' },
+  { seed: 'TrFelix',    color: '#E96D6D' },
+  { seed: 'TrSamantha',  color: '#F4A261' },
+  { seed: 'TrEnrique',  color: '#2A9D8F' },
+  { seed: 'TrSophia',    color: '#6A4C93' },
+  { seed: 'TrHarry',    color: '#264653' },
+  { seed: 'TrMaria',  color: '#E76F51' },
+  { seed: 'TrTorsten', color: '#457B9D' },
+  { seed: 'TrIggy',   color: '#A8DADC' },
+  { seed: 'TrStu',      color: '#8ecae6' },
+  { seed: 'TrChelsea',  color: '#1D3557' },
+  { seed: 'TrEric',     color: '#0A5D64' },
+  { seed: 'TrFranklin', color: '#34A853' },
+  { seed: 'TrImran',    color: '#FBBC05' },
+  { seed: 'TrRachel',   color: '#EA4335' },
+  { seed: 'TrShamila',  color: '#6A5AE0' },
+  { seed: 'TrHelen',    color: '#FF6B6B' },
+  { seed: 'TrNancy',    color: '#4ECDC4' },
+  { seed: 'TrChad',     color: '#FFD93D' },
 ];
 
 const PREDEFINED_SEEDS = AVATAR_OPTIONS.map((a) => a.seed);
@@ -121,7 +129,7 @@ const Signup = () => {
             <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1 block">
               CHOOSE YOUR AVATAR
             </label>
-            <div className="grid grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+            <div className="grid grid-cols-4 gap-4 max-h-[280px] overflow-y-auto pr-2 scrollbar-none pb-4 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
               {PREDEFINED_SEEDS.map((seed) => (
                 <button
                   key={seed}
@@ -135,8 +143,7 @@ const Signup = () => {
                 >
                   <div className="w-full h-full p-4 flex items-center justify-center overflow-hidden">
                     <TygerAvatar 
-                      seed={seed} 
-                      className="w-full h-full object-contain"
+                      name={seed as any} 
                     />
                   </div>
                 </button>

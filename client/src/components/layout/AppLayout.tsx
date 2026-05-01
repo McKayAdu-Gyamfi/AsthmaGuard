@@ -8,11 +8,11 @@ import { TygerAvatar } from 'tyger-avatar';
 
 /** TygerAvatar-based user avatar */
 const UserAvatar = ({ seed }: { seed?: string }) => {
+  const validName = (!seed || !seed.startsWith('Tr')) ? 'TrFelix' : seed;
   return (
     <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
       <TygerAvatar 
-        seed={seed || 'avatar-1'} 
-        className="w-full h-full object-contain"
+        name={validName as any} 
       />
     </div>
   );
@@ -22,21 +22,32 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = React.useState<any>(null);
+  const [localAvatar, setLocalAvatar] = React.useState(() => localStorage.getItem('avatar_seed'));
+
+  const fetchSession = async () => {
+    try {
+      const res = await fetch('/api/auth/get-session');
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data?.user) {
+        setUser(data.user);
+      }
+    } catch {
+      // Backend not running
+    }
+  };
 
   React.useEffect(() => {
-    const fetchSession = async () => {
-      try {
-        const res = await fetch('/api/auth/get-session');
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data?.user) {
-          setUser(data.user);
-        }
-      } catch {
-        // Backend not running — silently ignore
-      }
-    };
     fetchSession();
+
+    // Listen for avatar changes
+    const handleAvatarChange = () => {
+      setLocalAvatar(localStorage.getItem('avatar_seed'));
+      fetchSession();
+    };
+
+    window.addEventListener('avatarChanged', handleAvatarChange);
+    return () => window.removeEventListener('avatarChanged', handleAvatarChange);
   }, []);
 
   const navItems = [
@@ -56,7 +67,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="bg-[#F0F5F5] rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-[#E6EDED] transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-white border border-slate-200 overflow-hidden shadow-sm">
-                <UserAvatar seed={user?.image} />
+                <UserAvatar seed={user?.image || localAvatar || undefined} />
               </div>
               <span className="text-[14px] font-semibold text-slate-800">
                 {user?.name || 'Guest User'}
@@ -123,7 +134,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
               className="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-white shadow-md md:hidden ml-2 cursor-pointer flex items-center justify-center"
               onClick={() => navigate('/profile')}
             >
-              <UserAvatar seed={user?.image} />
+              <UserAvatar seed={user?.image || localAvatar || undefined} />
             </div>
           </div>
         </header>

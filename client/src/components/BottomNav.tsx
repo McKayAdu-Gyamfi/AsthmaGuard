@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, LayoutDashboard, LineChart, CalendarDays, User, Map, History, Bell, MessageSquare, Activity } from 'lucide-react';
+import { LayoutDashboard, LineChart, User, MessageSquare, Activity } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
