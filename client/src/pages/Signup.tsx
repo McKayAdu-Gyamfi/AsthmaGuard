@@ -143,7 +143,7 @@ const Signup = () => {
                 >
                   <div className="w-full h-full p-4 flex items-center justify-center overflow-hidden">
                     <TygerAvatar 
-                      name={seed as any} 
+                      seed={seed} 
                     />
                   </div>
                 </button>
