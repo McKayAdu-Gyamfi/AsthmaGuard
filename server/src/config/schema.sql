@@ -128,11 +128,6 @@ CREATE TABLE medications (
 
 ALTER TABLE medications DISABLE ROW LEVEL SECURITY;
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_KEY;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 CREATE TABLE medication_logs (
     id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
     medication_id UUID        REFERENCES medications(id) ON DELETE CASCADE,

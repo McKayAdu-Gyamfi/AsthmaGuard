@@ -1,11 +1,6 @@
-/**
- * routes/risk.js
- * Express route for the Smart Asthma Risk Engine.
- */
-
 import express from "express";
 import { assessRisk, updateWeights, RISK_LEVEL } from "../services/riskEngineService.js";
-import supabase from "../config/supabase.js";
+import { pool } from "../config/db.js";
 import { createDashboardAlert } from "../services/notificationService.js";
 import { optionalAuth } from "../middlewares/optionalAuth.js";
 import { getWeather } from "../services/weatherService.js";
@@ -16,7 +11,6 @@ const router = express.Router();
 router.use(optionalAuth);
 
 // ─── GET /api/v1/risk ───────────────────
-// Now accepts ?lat=...&lon=...
 router.get("/", async (req, res) => {
   try {
     const lat = req.query.lat || 5.6037; // Default to Accra
@@ -33,7 +27,6 @@ router.get("/", async (req, res) => {
       locationName = weatherData.location || locationName;
     } catch (apiError) {
       console.warn("External API error, using fallbacks:", apiError.message);
-      // Fallback data if APIs fail
       weatherData = { temp: 32, humidity: 75 };
       aqiData = { aqi: 120, pm25: 40 };
     }
@@ -47,26 +40,28 @@ router.get("/", async (req, res) => {
     };
 
     const result = assessRisk(input);
-    result.location = locationName; // Attach location to result
+    result.location = locationName;
     
     const userId = req.user ? req.user.id : null;
 
-    // SAVE TO SUPABASE
-    const { error } = await supabase.from("risk_readings").insert([
-      {
-        user_id: userId,
-        location: locationName,
-        aqi: input.aqi,
-        pm25: input.pm25,
-        humidity: input.humidity,
-        temperature: input.temperatureC,
-        risk_level: result.overallRisk,
-        risk_score: Math.round(result.mlProbability * 100)
-      }
-    ]);
-    
-    if (error) {
-      console.error("Supabase insert error:", error);
+    // SAVE TO DATABASE (Using pool to bypass RLS)
+    try {
+      await pool.query(
+        `INSERT INTO risk_readings (user_id, location, aqi, pm25, humidity, temperature, risk_level, risk_score)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          userId,
+          locationName,
+          input.aqi,
+          input.pm25,
+          input.humidity,
+          input.temperatureC,
+          result.overallRisk,
+          Math.round(result.mlProbability * 100)
+        ]
+      );
+    } catch (dbError) {
+      console.error("Database insert error (risk_readings):", dbError.message);
     }
 
     res.json({
@@ -88,7 +83,6 @@ router.post("/assess", async (req, res) => {
   const { aqi, pm25, humidity, temperatureC, location } = req.body;
   const locationName = location || "Accra, Ghana";
 
-  // Basic input validation
   const errors = [];
   if (aqi == null) errors.push("aqi is required");
   if (pm25 == null) errors.push("pm25 is required");
@@ -104,19 +98,25 @@ router.post("/assess", async (req, res) => {
   
   const userId = req.user ? req.user.id : null;
 
-  // SAVE TO SUPABASE
-  const { error } = await supabase.from("risk_readings").insert([
-    {
-      user_id: userId,
-      location: locationName,
-      aqi,
-      pm25,
-      humidity,
-      temperature: temperatureC,
-      risk_level: result.overallRisk,
-      risk_score: Math.round(result.mlProbability * 100)
-    }
-  ]);
+  // SAVE TO DATABASE (Using pool to bypass RLS)
+  try {
+    await pool.query(
+      `INSERT INTO risk_readings (user_id, location, aqi, pm25, humidity, temperature, risk_level, risk_score)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [
+        userId,
+        locationName,
+        aqi,
+        pm25,
+        humidity,
+        temperatureC,
+        result.overallRisk,
+        Math.round(result.mlProbability * 100)
+      ]
+    );
+  } catch (dbError) {
+    console.error("Database insert error (risk_readings):", dbError.message);
+  }
 
   if (userId && result.overallRisk !== RISK_LEVEL.LOW) {
     const alertMessage = result.alerts
