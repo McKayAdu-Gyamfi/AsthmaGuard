@@ -4,16 +4,19 @@ import { useNavigate } from 'react-router-dom';
 import { CircularProgress } from '@/components/CircularProgress';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { RiskMap } from '@/components/RiskMap';
 
 const Insights = () => {
   const navigate = useNavigate();
   const [riskData, setRiskData] = useState<any>(null);
   const [weeklyData, setWeeklyData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [coords, setCoords] = useState<{lat: number, lon: number} | null>(null);
 
   useEffect(() => {
     const fetchInsightsData = async (lat?: number, lon?: number) => {
       try {
+        if (lat && lon) setCoords({ lat, lon });
         const queryParams = lat && lon ? `?lat=${lat}&lon=${lon}` : '';
         const [riskRes, weeklyRes] = await Promise.all([
           fetch(`/api/v1/risk${queryParams}`),
@@ -54,11 +57,14 @@ const Insights = () => {
   const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   
   // Map weekly data to chart format
-  const trendData = days.map((day, i) => ({
-    day,
-    value: weeklyData[i]?.risk_score || 20,
-    risk: weeklyData[i]?.risk_level?.toLowerCase() || 'low'
-  }));
+  const trendData = days.map((day) => {
+    const dayData = weeklyData.find(d => d.day.toLowerCase() === day.toLowerCase());
+    return {
+      day,
+      value: dayData ? parseFloat(dayData.risk_score) : 0,
+      risk: dayData ? dayData.risk_level.toLowerCase() : 'none'
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#F6F8F9] flex flex-col relative pb-24">
@@ -78,7 +84,7 @@ const Insights = () => {
         <div className="flex flex-col items-center mb-10">
            <div className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-[#E8EFF0] border border-[#D1E0E1] text-[#2F5E60] text-sm font-bold mb-8 shadow-sm">
              <MapPin className="w-3.5 h-3.5 fill-current" />
-             {riskData?.location || 'Accra, Ghana'}
+             {riskData?.location || 'Current Location'}
            </div>
 
            <div className="relative mb-2">
@@ -102,20 +108,23 @@ const Insights = () => {
                 <TrendingUp className="w-5 h-5 text-[#0A5D64]" />
                 7-Day Trend
               </h3>
-              <span className="text-[11px] font-bold text-slate-400 uppercase">Risk History</span>
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Risk History</span>
            </div>
 
-           <div className="flex items-end justify-between h-40 gap-2 mb-6">
+           <div className="flex items-end justify-between h-40 gap-2 mb-6 px-2">
               {trendData.map((d) => (
-                <div key={d.day} className="flex-1 flex flex-col items-center gap-3">
+                <div key={d.day} className="flex-1 flex flex-col items-center gap-3 h-full justify-end">
                    <div 
                      className={cn(
-                       "w-full rounded-t-xl transition-all duration-500",
-                       d.risk === 'high' ? "bg-red-400" : d.risk === 'moderate' ? "bg-orange-300" : "bg-[#0A5D64]"
+                       "w-full max-w-[12px] rounded-full transition-all duration-700 ease-out",
+                       d.risk === 'emergency' ? "bg-red-500 shadow-sm" : 
+                       d.risk === 'high' ? "bg-red-400" : 
+                       d.risk === 'moderate' ? "bg-orange-400" : 
+                       d.risk === 'low' ? "bg-emerald-500" : "bg-slate-100"
                      )} 
-                     style={{ height: `${Math.max(10, (d.value / 100) * 100)}%` }} 
+                     style={{ height: d.value > 0 ? `${Math.max(15, (d.value / 100) * 100)}%` : '8px' }} 
                    />
-                   <span className="text-[10px] font-bold text-slate-400 uppercase">{d.day}</span>
+                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{d.day}</span>
                 </div>
               ))}
            </div>
@@ -123,7 +132,17 @@ const Insights = () => {
            <div className="pt-4 border-t border-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-2">
                  <Calendar className="w-4 h-4 text-slate-400" />
-                 <span className="text-[12px] font-bold text-slate-800">Status: <span className={riskData?.overallRisk === 'LOW' ? 'text-green-500' : 'text-orange-500'}>{riskData?.overallRisk || 'Loading...'}</span></span>
+                 <span className="text-[12px] font-bold text-slate-800 flex items-center gap-1.5">
+                   Status: 
+                   <span className={cn(
+                     "px-2 py-0.5 rounded text-[10px] uppercase tracking-wider",
+                     riskData?.overallRisk === 'LOW' ? 'bg-emerald-50 text-emerald-600' : 
+                     riskData?.overallRisk === 'MODERATE' ? 'bg-orange-50 text-orange-600' : 
+                     'bg-red-50 text-red-600'
+                   )}>
+                     {riskData?.overallRisk || 'Loading...'}
+                   </span>
+                 </span>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-300" />
            </div>
@@ -155,20 +174,28 @@ const Insights = () => {
                 Recommendation
               </h4>
               <p className="text-[18px] font-bold leading-snug">
-                {riskData?.advice?.summary || 'Analyzing environmental conditions for your specific profile...'}
+                {riskData?.advice?.message || 'Analyzing environmental conditions for your specific profile...'}
               </p>
            </div>
         </Card>
 
-        {/* Interactive Map Placeholder */}
-        <div className="w-full h-40 bg-slate-200 rounded-[32px] overflow-hidden relative shadow-inner border border-white">
-           <div className="absolute inset-0 opacity-30 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PGNpcmNsZSBjeD0iMjAiIGN5PSIyMCIgcj0iMSIgZmlsbD0iIzAwMCIvPjwvc3ZnPg==')] pointer-events-none"></div>
-           <div className="absolute inset-0 flex items-center justify-center">
-              <div className="flex flex-col items-center">
-                 <MapPin className="w-8 h-8 text-[#0A5D64] fill-white animate-bounce" />
-                 <span className="mt-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Live Map View</span>
-              </div>
-           </div>
+        {/* Interactive Map View */}
+        <div className="w-full h-48 bg-slate-200 rounded-[32px] overflow-hidden relative shadow-sm border border-white">
+           {coords ? (
+             <RiskMap 
+               lat={coords.lat} 
+               lon={coords.lon} 
+               locationName={riskData?.location} 
+               riskLevel={riskData?.overallRisk} 
+             />
+           ) : (
+             <div className="absolute inset-0 flex items-center justify-center">
+               <div className="flex flex-col items-center">
+                  <MapPin className="w-8 h-8 text-[#0A5D64] fill-white animate-bounce" />
+                  <span className="mt-2 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Locating...</span>
+               </div>
+             </div>
+           )}
         </div>
       </div>
     </div>

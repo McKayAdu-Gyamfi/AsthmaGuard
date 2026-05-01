@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { NotificationPopover } from '@/components/notifications/NotificationPopover';
 import { TygerAvatar } from 'tyger-avatar';
 import 'tyger-avatar/lib/bundle/styles.css';
 
@@ -113,10 +114,34 @@ const Profile = () => {
     };
     fetchSession();
 
+    // Fetch live location
+    const fetchLiveLocation = async (lat?: number, lon?: number) => {
+      try {
+        const queryParams = lat && lon ? `?lat=${lat}&lon=${lon}` : '';
+        const res = await fetch(`/api/v1/risk${queryParams}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success && data.data.location) {
+            setProfileData((prev: any) => ({ ...prev, location: data.data.location }));
+            localStorage.setItem('asthma_location', data.data.location);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch live location:', err);
+      }
+    };
+
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => fetchLiveLocation(position.coords.latitude, position.coords.longitude),
+        () => fetchLiveLocation() // Fallback
+      );
+    } else {
+      fetchLiveLocation();
+    }
+
     const storedSev = localStorage.getItem('asthma_severity');
-    const storedLoc = localStorage.getItem('asthma_location');
     if (storedSev) setProfileData((prev: any) => ({ ...prev, severity: storedSev }));
-    if (storedLoc) setProfileData((prev: any) => ({ ...prev, location: storedLoc }));
   }, []);
 
   const openEditPopup = () => {
@@ -225,28 +250,30 @@ const Profile = () => {
       )}
 
       {/* Profile Header Card */}
-      <div className="bg-[#0A5D64] pt-12 pb-20 px-6 rounded-b-[40px] relative shadow-lg">
-        <div className="flex justify-between items-center mb-8">
+      <div className="bg-[#0A5D64] pt-8 pb-20 px-6 rounded-b-[40px] relative shadow-lg">
+        <div className="flex justify-between items-center mb-10">
           <h1 className="text-white text-[24px] font-bold">Profile</h1>
-          <button onClick={() => navigate('/settings')} className="p-2 rounded-full bg-white/10 text-white">
+          <button onClick={() => navigate('/settings')} className="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors">
             <Settings className="w-5 h-5" />
           </button>
         </div>
 
         <div className="flex items-center gap-5">
-          <div className="w-24 h-24 rounded-full border-4 border-white/30 overflow-hidden shadow-2xl bg-white flex items-center justify-center p-2 shrink-0">
-            <ProfileAvatar seed={user?.image || tempAvatarSeed} />
+          <div className="relative">
+            <div className="w-24 h-24 rounded-full border-4 border-white/30 overflow-hidden shadow-2xl bg-white flex items-center justify-center p-2 shrink-0">
+              <ProfileAvatar seed={user?.image || tempAvatarSeed} />
+            </div>
+            <button
+              onClick={openEditPopup}
+              className="absolute -right-1 -bottom-1 p-2.5 rounded-xl bg-white text-[#0A5D64] shadow-lg border border-slate-100 hover:scale-105 transition-transform"
+            >
+              <Edit2 className="w-4 h-4" />
+            </button>
           </div>
-          <div className="flex-1">
-            <h2 className="text-white text-[22px] font-bold">{profileData.name}</h2>
-            <p className="text-white/70 text-[14px]">{profileData.email}</p>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-white text-[22px] font-bold truncate">{profileData.name}</h2>
+            <p className="text-white/70 text-[14px] truncate">{profileData.email}</p>
           </div>
-          <button
-            onClick={openEditPopup}
-            className="p-3 rounded-2xl bg-white/10 text-white hover:bg-white/20 transition-colors shadow-sm"
-          >
-            <Edit2 className="w-5 h-5" />
-          </button>
         </div>
       </div>
 

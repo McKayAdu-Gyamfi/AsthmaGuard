@@ -1,5 +1,27 @@
 import { betterAuth } from "better-auth";
 import { pool } from "./db.js";
+import nodemailer from "nodemailer";
+
+// Helper to send emails
+const sendEmail = async ({ to, subject, text, html }) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_PORT === "465",
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+
+  await transporter.sendMail({
+    from: process.env.EMAIL_FROM || '"AsthmaGuard" <noreply@asthmaguard.com>',
+    to,
+    subject,
+    text,
+    html,
+  });
+};
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:4000",
@@ -14,6 +36,18 @@ export const auth = betterAuth({
   database: pool,
   emailAndPassword: {
     enabled: true,
+  },
+  email: {
+    from: process.env.EMAIL_FROM || "noreply@asthmaguard.com",
+    onSend: async ({ to, subject, text, html }) => {
+      try {
+        await sendEmail({ to, subject, text, html });
+        console.log(`📧 Email sent to ${to}: ${subject}`);
+      } catch (error) {
+        console.error(`❌ Failed to send email to ${to}:`, error.message);
+        throw error; // Rethrow so Better Auth knows it failed
+      }
+    },
   },
   socialProviders: {
     google: {

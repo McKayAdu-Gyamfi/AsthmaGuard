@@ -130,17 +130,19 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <NotificationPopover />
 
             {/* Mobile User Avatar */}
-            <div
-              className="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-white shadow-md md:hidden ml-2 cursor-pointer flex items-center justify-center"
-              onClick={() => navigate('/profile')}
-            >
-              <UserAvatar seed={user?.image || localAvatar || undefined} />
-            </div>
+            {!location.pathname.startsWith('/profile') && (
+              <div
+                className="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-white shadow-md md:hidden ml-2 cursor-pointer flex items-center justify-center"
+                onClick={() => navigate('/profile')}
+              >
+                <UserAvatar seed={user?.image || localAvatar || undefined} />
+              </div>
+            )}
           </div>
         </header>
 
         {/* Scrollable Page Content */}
-        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 relative w-full h-full p-4 md:p-8">
+        <main className="flex-1 overflow-y-auto pb-20 md:pb-6 relative w-full h-full md:p-8">
           {children}
         </main>
 

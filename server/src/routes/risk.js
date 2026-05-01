@@ -42,7 +42,8 @@ router.get("/", async (req, res) => {
       aqi: aqiData.aqi,
       pm25: aqiData.pm25 || 0,
       humidity: weatherData.humidity,
-      temperatureC: weatherData.temp
+      temperatureC: weatherData.temp,
+      location: locationName
     };
 
     const result = assessRisk(input);

@@ -266,16 +266,17 @@ function buildResult(overallRisk, factors, env) {
 }
 
 function getAdvice(risk, env) {
+  const loc = env.location || "your area";
   const base = {
     [RISK_LEVEL.LOW]: {
-      message: "Conditions are safe for most people with asthma in Accra.",
+      message: `Conditions are safe for most people with asthma in ${loc}.`,
       actions: [
         "Continue normal activities, but always carry your rescue inhaler.",
         "Monitor air quality daily via the app."
       ],
     },
     [RISK_LEVEL.MODERATE]: {
-      message: "Mild risk detected. Take preventive steps now to avoid symptoms later.",
+      message: `Mild risk detected in ${loc}. Take preventive steps now to avoid symptoms later.`,
       actions: [
         "Limit time outdoors, especially in traffic or dusty areas.",
         "Keep windows closed and use a fan or AC.",
@@ -284,7 +285,7 @@ function getAdvice(risk, env) {
       ],
     },
     [RISK_LEVEL.HIGH]: {
-      message: "High risk of asthma symptoms today in Accra. Act early to prevent an attack.",
+      message: `High risk of asthma symptoms today in ${loc}. Act early to prevent an attack.`,
       actions: [
         "Stay indoors as much as possible. Close windows and doors.",
         "Use air conditioning or a dehumidifier to bring humidity below 50%.",
@@ -295,7 +296,7 @@ function getAdvice(risk, env) {
       ],
     },
     [RISK_LEVEL.EMERGENCY]: {
-      message: "EMERGENCY CONDITIONS in Accra — very high chance of asthma attack. Protect yourself immediately.",
+      message: `EMERGENCY CONDITIONS in ${loc} — very high chance of asthma attack. Protect yourself immediately.`,
       actions: [
         "Do NOT go outdoors unless absolutely necessary.",
         "If outside, return indoors right away and close all windows.",
@@ -310,15 +311,15 @@ function getAdvice(risk, env) {
 
   let advice = { ...base[risk] };
 
-  // Accra-specific additions
+  // Context-specific additions
   if (env.humidity != null && env.humidity > 65) {
-    advice.actions.push("High humidity is a major trigger in Accra — use a dehumidifier or AC to bring indoor humidity below 50%.");
+    advice.actions.push(`High humidity in ${loc} is a major trigger — use a dehumidifier or AC to bring indoor humidity below 50%.`);
   }
   if (env.temperatureC != null && env.temperatureC > 30) {
-    advice.actions.push("Hot weather can worsen symptoms — stay in cool shaded or air-conditioned spaces and drink water regularly.");
+    advice.actions.push(`Hot weather in ${loc} can worsen symptoms — stay in cool shaded or air-conditioned spaces.`);
   }
   if (env.pm25 != null && env.pm25 > 35) {
-    advice.actions.push("Dust and PM2.5 levels are elevated — keep windows closed and avoid busy roads.");
+    advice.actions.push(`Dust and PM2.5 levels are elevated in ${loc} — keep windows closed.`);
   }
 
   return advice;

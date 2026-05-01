@@ -137,7 +137,7 @@ const HomeDashboard = () => {
             </h3>
             <Wind className="absolute right-5 top-5 w-6 h-6 text-[#0A5D64]" />
             <div className="flex items-center justify-between mt-2 pt-4 border-t border-slate-100">
-               <span className="text-[12px] text-[#475569]">Based on current location in {riskData?.location || 'Accra'}</span>
+               <span className="text-[12px] text-[#475569]">Based on your current location: {riskData?.location || 'Detecting...'}</span>
                <Button 
                  variant="secondary" 
                  onClick={() => navigate('/insights')}

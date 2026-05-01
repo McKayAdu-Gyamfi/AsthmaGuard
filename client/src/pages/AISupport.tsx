@@ -11,27 +11,82 @@ type Message = {
 
 const AISupport = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      sender: 'ai',
-      text: "Hello! I'm AsthmaGuard AI, your personal Asthma Support Doctor. I'm here 24/7 to help you manage your asthma. How are you feeling today? If you're in distress, tap \"EMERGENCY MODE\" above.",
-      time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
-    }
-  ]);
+  
+  // Initial message for new chats
+  const defaultMessage: Message = {
+    id: '1',
+    sender: 'ai',
+    text: "Hello! I'm AsthmaGuard AI, your personal Asthma Support Doctor. I'm here 24/7 to help you manage your asthma. How are you feeling today? If you're in distress, tap \"EMERGENCY MODE\" above.",
+    time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase()
+  };
+
+  // Load from localStorage or use default
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('asthma_guard_chat');
+    return saved ? JSON.parse(saved) : [defaultMessage];
+  });
+
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isTriggering, setIsTriggering] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const [error, setError] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Speech Recognition setup
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      setError("Your browser doesn't support speech recognition.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setError('');
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setInput(transcript);
+      handleSend(transcript); // Automatically send transcribed text
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error('Speech recognition error', event.error);
+      setError(`Voice error: ${event.error}`);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  // Save to localStorage whenever messages change
+  useEffect(() => {
+    localStorage.setItem('asthma_guard_chat', JSON.stringify(messages));
+    scrollToBottom();
+  }, [messages, isTyping]);
+
+  const clearChat = () => {
+    if (window.confirm('Are you sure you want to start a new session? This will clear your current chat history.')) {
+      setMessages([defaultMessage]);
+      localStorage.removeItem('asthma_guard_chat');
+    }
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isTyping]);
 
   const getBotResponse = async (userText: string) => {
     try {
@@ -159,9 +214,17 @@ const AISupport = () => {
     <div className="absolute inset-0 md:bottom-0 bottom-[75px] bg-[#F4F5F9] flex flex-col font-sans overflow-hidden z-40">
       {/* Top Bar: Online Status & Compact Emergency Button */}
       <div className="flex items-center justify-between px-6 pt-6 pb-2 shrink-0 bg-[#F4F5F9] z-10">
-         <div className="flex items-center gap-1.5 bg-[#DDF2E4] px-3 py-1.5 rounded-full shadow-sm">
-           <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></div>
-           <span className="text-[11px] font-bold text-[#113C33] tracking-wide">AI Online</span>
+         <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-[#DDF2E4] px-3 py-1.5 rounded-full shadow-sm">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#10B981] animate-pulse"></div>
+              <span className="text-[11px] font-bold text-[#113C33] tracking-wide">AI Online</span>
+            </div>
+            <button 
+              onClick={clearChat}
+              className="text-[11px] font-bold text-slate-400 hover:text-[#0A5D64] transition-colors uppercase tracking-widest px-2 py-1"
+            >
+              New Session
+            </button>
          </div>
          <button 
            onClick={handleEmergency}
@@ -275,7 +338,14 @@ const AISupport = () => {
 
             <button 
                type={input.trim() ? "submit" : "button"}
-               className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-colors shrink-0 ml-1 ${input.trim() ? 'bg-[#0A5D64] hover:bg-[#084b51]' : 'bg-[#6A5AE0] hover:bg-[#5C4EE0]'}`}
+               onClick={!input.trim() ? startListening : undefined}
+               className={`w-12 h-12 rounded-full flex items-center justify-center text-white shadow-md transition-all shrink-0 ml-1 ${
+                 input.trim() 
+                   ? 'bg-[#0A5D64] hover:bg-[#084b51]' 
+                   : isListening 
+                     ? 'bg-red-500 animate-pulse scale-110' 
+                     : 'bg-[#6A5AE0] hover:bg-[#5C4EE0]'
+               }`}
             >
                {input.trim() ? <Send className="w-5 h-5 ml-0.5" /> : <Mic className="w-5 h-5" />}
             </button>

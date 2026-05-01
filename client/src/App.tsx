@@ -13,6 +13,8 @@ import AISupport from './pages/AISupport';
 import Settings from './pages/Settings';
 import EmergencyContacts from './pages/EmergencyContacts';
 import AlertsHistory from './pages/AlertsHistory';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Loader from './components/Loader';
 
 import { authClient } from './lib/auth-client';
@@ -44,6 +46,8 @@ const AppContent = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/asthma-attack" element={<AsthmaAttackGuide />} />
       
       {/* Wrapped routes */}
