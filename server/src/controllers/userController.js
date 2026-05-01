@@ -1,6 +1,34 @@
 import { pool } from "../config/db.js";
 
 /**
+ * Delete current user account
+ * DELETE /api/v1/users/me
+ */
+export const deleteMe = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+
+    // Delete the user from the "user" table. 
+    // ON DELETE CASCADE will handle removing related sessions, accounts, and profile data.
+    const result = await pool.query(
+      `DELETE FROM "user" WHERE id = $1 RETURNING *`,
+      [userId]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    res.json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+/**
  * Get current user profile
  * GET /api/v1/users/me
  */

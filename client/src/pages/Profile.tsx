@@ -151,6 +151,26 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    if (!window.confirm("Are you sure you want to delete your account? This action cannot be undone.")) return;
+
+    try {
+      const res = await fetch('/api/v1/users/me', { method: 'DELETE' });
+      if (res.ok) {
+        // Clear everything
+        localStorage.clear();
+        sessionStorage.clear();
+        // Redirect to signup
+        window.location.href = '/signup';
+      } else {
+        alert("Failed to delete account. Please try again.");
+      }
+    } catch (err) {
+      console.error('Delete account error:', err);
+      alert("An error occurred. Please try again.");
+    }
+  };
+
   const updateLocation = (e: any) => {
     if (e.key === 'Enter' || e.type === 'blur') {
       setIsEditingLocation(false);
@@ -343,6 +363,7 @@ const Profile = () => {
           <Button
             variant="ghost"
             className="w-full h-14 rounded-2xl text-red-400 hover:text-red-500 hover:bg-red-50 font-bold flex gap-2"
+            onClick={handleDeleteAccount}
           >
             <Trash2 className="w-5 h-5" />
             Delete Account
