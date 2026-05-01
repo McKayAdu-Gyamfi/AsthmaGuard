@@ -140,6 +140,7 @@ CREATE TABLE medication_logs (
     taken_at      TIMESTAMPTZ DEFAULT NOW()
 );
 
+
 -- ============================================================
 -- RLS & Security (Disable for now to allow local/service access)
 -- ============================================================

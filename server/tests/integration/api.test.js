@@ -4,7 +4,7 @@ import app from '../../server.js';
 
 describe('API Integration Tests', () => {
   it('GET /api/risk should return 200 and risk data', async () => {
-    const response = await request(app).get('/api/risk');
+    const response = await request(app).get('/api/v1/risk');
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);
     expect(response.body.data).toBeDefined();
