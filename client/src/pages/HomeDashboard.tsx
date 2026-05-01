@@ -31,7 +31,7 @@ const HomeDashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#F6F8F9] to-white flex flex-col relative pb-24 font-sans">
+    <div className="min-h-screen bg-gradient-to-b from-[#F6F8F9] to-white flex flex-col relative pb-24 font-sans overflow-x-hidden">
       
       {/* Header Profile Section */}
       <div className="flex items-center justify-between px-6 py-5 mt-2">

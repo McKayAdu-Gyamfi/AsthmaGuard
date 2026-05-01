@@ -3,21 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { authClient } from '@/lib/authClient';
+import { TygerAvatar } from 'tyger-avatar';
 
 const AVATAR_OPTIONS = [
-  { seed: 'Alex',     color: '#5B8FF9' },
-  { seed: 'Cathy',    color: '#E96D6D' },
-  { seed: 'Chelsea',  color: '#F4A261' },
-  { seed: 'Enrique',  color: '#2A9D8F' },
-  { seed: 'Felix',    color: '#6A4C93' },
-  { seed: 'Harry',    color: '#264653' },
-  { seed: 'Maria',    color: '#E76F51' },
-  { seed: 'Samantha', color: '#457B9D' },
-  { seed: 'Sophia',   color: '#A8DADC' },
-  { seed: 'Stu',      color: '#8ecae6' },
-  { seed: 'Torsten',  color: '#1D3557' },
-  { seed: 'Iggy',     color: '#0A5D64' },
+  { seed: 'avatar-1',     color: '#5B8FF9' },
+  { seed: 'avatar-2',    color: '#E96D6D' },
+  { seed: 'avatar-3',  color: '#F4A261' },
+  { seed: 'avatar-4',  color: '#2A9D8F' },
+  { seed: 'avatar-5',    color: '#6A4C93' },
+  { seed: 'avatar-6',    color: '#264653' },
+  { seed: 'avatar-7',  color: '#E76F51' },
+  { seed: 'avatar-8', color: '#457B9D' },
+  { seed: 'avatar-9',   color: '#A8DADC' },
+  { seed: 'avatar-10',      color: '#8ecae6' },
+  { seed: 'avatar-11',  color: '#1D3557' },
+  { seed: 'avatar-12',     color: '#0A5D64' },
 ];
 
 const PREDEFINED_SEEDS = AVATAR_OPTIONS.map((a) => a.seed);
@@ -31,6 +31,7 @@ const Signup = () => {
   const [password, setPassword] = useState('');
   const [severity, setSeverity] = useState('');
   const [avatarSeed, setAvatarSeed] = useState(PREDEFINED_SEEDS[0]);
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,15 +43,21 @@ const Signup = () => {
       const res = await fetch('/api/auth/sign-up/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, image: avatarSeed })
+        body: JSON.stringify({ 
+          name, 
+          email, 
+          password,
+          image: avatarSeed // Save the seed to the 'image' field in better-auth
+        }),
+        credentials: 'include'
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.message || 'Signup failed. Please try again.');
       } else {
-        // Save severity locally since better-auth doesn't natively support it on user model without custom fields
+        // Store local preferences — better-auth doesn't accept these as signup fields
         if (severity) localStorage.setItem('asthma_severity', severity);
-        // Automatically route to dashboard after successful signup
+        if (avatarSeed) localStorage.setItem('avatar_seed', avatarSeed);
         window.location.href = '/';
       }
     } catch (err) {
@@ -62,10 +69,17 @@ const Signup = () => {
 
   const handleGoogleLogin = async () => {
     try {
-      await authClient.signIn.social({
-        provider: 'google',
-        callbackURL: window.location.origin,
+      const res = await fetch('/api/auth/sign-in/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ provider: 'google', callbackURL: window.location.origin }),
       });
+      const data = await res.json();
+      if (data?.url) {
+        window.location.href = data.url;
+      } else {
+        setError('Google login is not configured. Check server environment variables.');
+      }
     } catch (err) {
       setError('Failed to initiate Google login. Please try again.');
     }
@@ -113,17 +127,17 @@ const Signup = () => {
                   key={seed}
                   type="button"
                   onClick={() => setAvatarSeed(seed)}
-                  className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
+                  className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 bg-slate-50 ${
                     avatarSeed === seed
                       ? 'ring-4 ring-[#2F5E60] ring-offset-2 scale-105 z-10'
                       : 'hover:scale-105 hover:shadow-md'
                   }`}
                 >
-                  <div
-                    className="w-full h-full flex items-center justify-center text-white text-[14px] font-bold"
-                    style={{ background: seedColor(seed) }}
-                  >
-                    {seed.slice(0, 2).toUpperCase()}
+                  <div className="w-full h-full p-4 flex items-center justify-center overflow-hidden">
+                    <TygerAvatar 
+                      seed={seed} 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                 </button>
               ))}
@@ -215,7 +229,12 @@ const Signup = () => {
           
           <div className="flex items-start gap-3 pt-2">
             <div className="flex items-center h-5 mt-0.5">
-              <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-[#2F5E60] focus:ring-[#2F5E60] bg-white" />
+              <input 
+                type="checkbox" 
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 text-[#2F5E60] focus:ring-[#2F5E60] bg-white cursor-pointer" 
+              />
             </div>
             <div className="text-[13px] leading-tight text-slate-500">
               I agree to the <a href="#" className="font-semibold text-[#2F5E60] hover:underline">Terms of Service</a> and <a href="#" className="font-semibold text-[#2F5E60] hover:underline">Privacy Policy</a>
@@ -223,9 +242,13 @@ const Signup = () => {
           </div>
 
           <Button 
-            className="w-full h-14 bg-[#2F5E60] hover:bg-[#254A4C] text-[16px] font-semibold text-white rounded-xl shadow-sm mt-4" 
+            className={`w-full h-14 text-[16px] font-semibold text-white rounded-xl shadow-sm mt-4 transition-all ${
+              (!name || !email || !password || !agreed || isLoading) 
+                ? "bg-slate-300 cursor-not-allowed" 
+                : "bg-[#2F5E60] hover:bg-[#254A4C]"
+            }`} 
             onClick={handleSignup}
-            disabled={isLoading}
+            disabled={!name || !email || !password || !agreed || isLoading}
           >
             {isLoading ? 'Creating Account...' : 'Sign Up'}
           </Button>

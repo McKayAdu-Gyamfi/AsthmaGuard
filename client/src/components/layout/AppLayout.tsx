@@ -4,15 +4,16 @@ import { LayoutDashboard, LineChart, Activity, User, Settings, MessageSquare } f
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
+import { TygerAvatar } from 'tyger-avatar';
 
-/** Simple initials-based avatar — no external library needed */
-const UserAvatar = ({ name }: { name?: string }) => {
-  const initials = name
-    ? name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
-    : 'G';
+/** TygerAvatar-based user avatar */
+const UserAvatar = ({ seed }: { seed?: string }) => {
   return (
-    <div className="w-full h-full flex items-center justify-center bg-[#044E45] text-white text-[13px] font-bold select-none">
-      {initials}
+    <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
+      <TygerAvatar 
+        seed={seed || 'avatar-1'} 
+        className="w-full h-full object-contain"
+      />
     </div>
   );
 };
@@ -47,15 +48,15 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB] flex font-sans text-slate-900 w-full overflow-hidden">
+    <div className="min-h-screen bg-[#F9FAFB] flex font-sans text-slate-900 w-full overflow-x-hidden relative">
       {/* Desktop Sidebar */}
       <aside className="hidden md:flex flex-col w-[250px] bg-white border-r border-[#E5E7EB] shrink-0 h-screen sticky top-0 relative z-20">
         {/* User Card */}
         <div className="p-6 md:p-8 mb-2">
           <div className="bg-[#F0F5F5] rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-[#E6EDED] transition-colors">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden">
-                <UserAvatar name={user?.name} />
+              <div className="w-10 h-10 rounded-full bg-white border border-slate-200 overflow-hidden shadow-sm">
+                <UserAvatar seed={user?.image} />
               </div>
               <span className="text-[14px] font-semibold text-slate-800">
                 {user?.name || 'Guest User'}
@@ -102,7 +103,7 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       </aside>
 
       {/* Main Content Workspace */}
-      <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
+      <div className="flex-1 flex flex-col h-screen overflow-x-hidden w-full relative">
         {/* Top Header */}
         <header className="h-[80px] bg-white border-b border-[#E5E7EB] shrink-0 px-6 flex items-center justify-end md:justify-between sticky top-0 z-50 w-full transition-all">
           {/* Logo */}
@@ -119,10 +120,10 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
 
             {/* Mobile User Avatar */}
             <div
-              className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden border-2 border-white shadow-sm md:hidden ml-2 cursor-pointer"
+              className="w-10 h-10 rounded-full bg-white overflow-hidden border-2 border-white shadow-md md:hidden ml-2 cursor-pointer flex items-center justify-center"
               onClick={() => navigate('/profile')}
             >
-              <UserAvatar name={user?.name} />
+              <UserAvatar seed={user?.image} />
             </div>
           </div>
         </header>

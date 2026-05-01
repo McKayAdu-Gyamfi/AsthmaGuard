@@ -4,21 +4,22 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { TygerAvatar } from 'tyger-avatar';
 
 /** Palette for avatar color circles in the picker */
 const AVATAR_OPTIONS = [
-  { seed: 'Alex',     color: '#5B8FF9' },
-  { seed: 'Cathy',    color: '#E96D6D' },
-  { seed: 'Chelsea',  color: '#F4A261' },
-  { seed: 'Enrique',  color: '#2A9D8F' },
-  { seed: 'Felix',    color: '#6A4C93' },
-  { seed: 'Harry',    color: '#264653' },
-  { seed: 'Maria',    color: '#E76F51' },
-  { seed: 'Samantha', color: '#457B9D' },
-  { seed: 'Sophia',   color: '#A8DADC' },
-  { seed: 'Stu',      color: '#F1FAEE' },
-  { seed: 'Torsten',  color: '#1D3557' },
-  { seed: 'Iggy',     color: '#0A5D64' },
+  { seed: 'avatar-1',     color: '#5B8FF9' },
+  { seed: 'avatar-2',    color: '#E96D6D' },
+  { seed: 'avatar-3',  color: '#F4A261' },
+  { seed: 'avatar-4',  color: '#2A9D8F' },
+  { seed: 'avatar-5',    color: '#6A4C93' },
+  { seed: 'avatar-6',    color: '#264653' },
+  { seed: 'avatar-7',  color: '#E76F51' },
+  { seed: 'avatar-8', color: '#457B9D' },
+  { seed: 'avatar-9',   color: '#A8DADC' },
+  { seed: 'avatar-10',      color: '#F1FAEE' },
+  { seed: 'avatar-11',  color: '#1D3557' },
+  { seed: 'avatar-12',     color: '#0A5D64' },
 ];
 
 /** Returns background colour for a given avatar seed */
@@ -32,28 +33,26 @@ const getInitials = (name?: string) =>
     : 'G';
 
 /** Full-size avatar used on the profile header */
-const ProfileAvatar = ({ name, seed }: { name?: string; seed?: string }) => (
-  <div
-    className="w-full h-full flex items-center justify-center text-white text-[28px] font-bold select-none"
-    style={{ background: seedColor(seed ?? '') }}
-  >
-    {getInitials(name)}
-  </div>
+const ProfileAvatar = ({ seed }: { seed?: string }) => (
+  <TygerAvatar 
+    seed={seed || 'avatar-1'} 
+    className="w-full h-full"
+  />
 );
 
 /** Small avatar circle used in the picker grid */
 const PickerAvatar = ({ seed, selected, onClick }: { seed: string; selected: boolean; onClick: () => void }) => (
   <button
     onClick={onClick}
-    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
+    className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 bg-slate-50 ${
       selected ? 'ring-4 ring-[#0A5D64] ring-offset-2 scale-105 z-10' : 'hover:scale-105 hover:shadow-md'
     }`}
   >
-    <div
-      className="w-full h-full flex items-center justify-center text-white text-[15px] font-bold"
-      style={{ background: seedColor(seed) }}
-    >
-      {seed.slice(0, 2).toUpperCase()}
+    <div className="w-full h-full p-2 flex items-center justify-center overflow-hidden">
+      <TygerAvatar 
+        seed={seed} 
+        className="w-full h-full object-contain"
+      />
     </div>
   </button>
 );
@@ -71,7 +70,7 @@ const Profile = () => {
 
   const [showEditPopup, setShowEditPopup] = useState(false);
   const [tempName, setTempName] = useState('');
-  const [tempAvatarSeed, setTempAvatarSeed] = useState('Felix');
+  const [tempAvatarSeed, setTempAvatarSeed] = useState(() => localStorage.getItem('avatar_seed') || 'Felix');
 
   const [isEditingSeverity, setIsEditingSeverity] = useState(false);
   const [isEditingLocation, setIsEditingLocation] = useState(false);
@@ -86,7 +85,7 @@ const Profile = () => {
           setUser(data.user);
           setProfileData((prev: any) => ({ ...prev, name: data.user.name, email: data.user.email }));
           setTempName(data.user.name);
-          setTempAvatarSeed(data.user.image || 'Felix');
+          setTempAvatarSeed(localStorage.getItem('avatar_seed') || 'Felix');
         }
       } catch {
         // Backend offline — silently ignore
@@ -102,14 +101,30 @@ const Profile = () => {
 
   const openEditPopup = () => {
     setTempName(profileData.name);
-    setTempAvatarSeed(user?.image || 'Felix');
+    setTempAvatarSeed(localStorage.getItem('avatar_seed') || 'Felix');
     setShowEditPopup(true);
   };
 
-  const handleSaveProfile = () => {
-    setProfileData((prev: any) => ({ ...prev, name: tempName }));
-    setUser((prev: any) => ({ ...prev, name: tempName, image: tempAvatarSeed }));
-    setShowEditPopup(false);
+  const handleSaveProfile = async () => {
+    try {
+      setProfileData((prev: any) => ({ ...prev, name: tempName }));
+      localStorage.setItem('avatar_seed', tempAvatarSeed);
+      
+      // Update the user in the backend
+      await fetch('/api/auth/update-user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          name: tempName,
+          image: tempAvatarSeed 
+        }),
+      });
+      
+      setUser((prev: any) => ({ ...prev, name: tempName, image: tempAvatarSeed }));
+      setShowEditPopup(false);
+    } catch (err) {
+      console.error('Failed to update profile:', err);
+    }
   };
 
   const updateLocation = (e: any) => {
@@ -173,8 +188,8 @@ const Profile = () => {
         </div>
 
         <div className="flex items-center gap-5">
-          <div className="w-24 h-24 rounded-full border-4 border-white/20 overflow-hidden shadow-xl">
-            <ProfileAvatar name={user?.name || profileData.name} seed={user?.image || tempAvatarSeed} />
+          <div className="w-24 h-24 rounded-full border-4 border-white/30 overflow-hidden shadow-2xl bg-white flex items-center justify-center p-2 shrink-0">
+            <ProfileAvatar seed={user?.image || tempAvatarSeed} />
           </div>
           <div className="flex-1">
             <h2 className="text-white text-[22px] font-bold">{profileData.name}</h2>

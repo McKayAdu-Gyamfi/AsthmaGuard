@@ -51,4 +51,6 @@
 /* Custom background for the entire app matching the soft grey-white */
 body {
   background-color: #F6F8F9;
+  overflow-x: hidden;
+  overscroll-behavior-y: none;
 }
