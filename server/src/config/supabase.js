@@ -1,9 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
+import dotenv from 'dotenv';
+dotenv.config();
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
 
-const supabaseUrl = 'https://uewfaexbptgjpukrvypt.supabase.co';
-const supabaseKey = 'sb_publishable_sGE7bbxqEoo9qQ-P6BnZjw_VHIP8LY8';
+if (!supabaseUrl || !supabaseKey) {
+  console.warn('⚠️ Supabase credentials missing in environment variables.');
+}
 
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl || '', supabaseKey || '');
 
 export default supabase;

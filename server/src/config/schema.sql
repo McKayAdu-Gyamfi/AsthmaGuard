@@ -114,6 +114,8 @@ CREATE TABLE symptoms (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE symptoms DISABLE ROW LEVEL SECURITY;
+
 CREATE TABLE medications (
     id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id    TEXT        NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
@@ -124,9 +126,34 @@ CREATE TABLE medications (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+ALTER TABLE medications DISABLE ROW LEVEL SECURITY;
+
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_KEY;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 CREATE TABLE medication_logs (
     id            UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
     medication_id UUID        REFERENCES medications(id) ON DELETE CASCADE,
     user_id       TEXT        NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
     taken_at      TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ============================================================
+-- RLS & Security (Disable for now to allow local/service access)
+-- ============================================================
+
+ALTER TABLE "user" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "session" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "account" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "verification" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE risk_readings DISABLE ROW LEVEL SECURITY;
+ALTER TABLE alerts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE emergencies DISABLE ROW LEVEL SECURITY;
+ALTER TABLE symptoms DISABLE ROW LEVEL SECURITY;
+ALTER TABLE medications DISABLE ROW LEVEL SECURITY;
+ALTER TABLE medication_logs DISABLE ROW LEVEL SECURITY;
+
+ALTER TABLE medication_logs DISABLE ROW LEVEL SECURITY;
