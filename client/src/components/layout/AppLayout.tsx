@@ -1,13 +1,42 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, LineChart, Activity, User, Search, Settings, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, LineChart, Activity, User, Settings, MessageSquare } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { BottomNav } from '@/components/BottomNav';
 import { NotificationPopover } from '@/components/notifications/NotificationPopover';
 
+/** Simple initials-based avatar — no external library needed */
+const UserAvatar = ({ name }: { name?: string }) => {
+  const initials = name
+    ? name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
+    : 'G';
+  return (
+    <div className="w-full h-full flex items-center justify-center bg-[#044E45] text-white text-[13px] font-bold select-none">
+      {initials}
+    </div>
+  );
+};
+
 export const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [user, setUser] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const res = await fetch('/api/auth/get-session');
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data?.user) {
+          setUser(data.user);
+        }
+      } catch {
+        // Backend not running — silently ignore
+      }
+    };
+    fetchSession();
+  }, []);
 
   const navItems = [
     { name: 'Home', path: '/', icon: LayoutDashboard },
@@ -26,12 +55,11 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="bg-[#F0F5F5] rounded-xl p-3 flex items-center justify-between cursor-pointer hover:bg-[#E6EDED] transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden">
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M50 20C30 20 20 40 25 65C30 90 70 90 75 65C80 40 70 20 50 20Z" fill="#2E1A11"/>
-                  <circle cx="50" cy="55" r="22" fill="#FCE7D9"/>
-                </svg>
+                <UserAvatar name={user?.name} />
               </div>
-              <span className="text-[14px] font-semibold text-slate-800">Sarah Mensah</span>
+              <span className="text-[14px] font-semibold text-slate-800">
+                {user?.name || 'Guest User'}
+              </span>
             </div>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-500"><path d="m6 9 6 6 6-6"/></svg>
           </div>
@@ -48,27 +76,27 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
                 onClick={() => navigate(item.path)}
                 className={cn(
                   "w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium text-[15px]",
-                  isActive 
-                    ? "bg-[#F0F5F5] text-[#044E45] shadow-sm relative after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-8 after:w-1 after:bg-[#044E45] after:rounded-l-full" 
+                  isActive
+                    ? "bg-[#F0F5F5] text-[#044E45] shadow-sm relative after:absolute after:right-0 after:top-1/2 after:-translate-y-1/2 after:h-8 after:w-1 after:bg-[#044E45] after:rounded-l-full"
                     : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
                 )}
               >
                 <Icon className={cn("w-5 h-5", isActive ? "text-[#044E45]" : "text-slate-400")} />
                 {item.name}
               </button>
-            )
+            );
           })}
-          
+
           <div className="pt-6 pb-2 px-4">
-             <div className="border-t border-slate-100"></div>
+            <div className="border-t border-slate-100"></div>
           </div>
-          
-          <button 
-             onClick={() => navigate('/settings')}
-             className="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium text-[15px] text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+
+          <button
+            onClick={() => navigate('/settings')}
+            className="w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all font-medium text-[15px] text-slate-500 hover:text-slate-800 hover:bg-slate-50"
           >
-             <Settings className="w-5 h-5 text-slate-400" />
-             Settings
+            <Settings className="w-5 h-5 text-slate-400" />
+            Settings
           </button>
         </nav>
       </aside>
@@ -77,33 +105,31 @@ export const AppLayout = ({ children }: { children: React.ReactNode }) => {
       <div className="flex-1 flex flex-col h-screen overflow-hidden w-full relative">
         {/* Top Header */}
         <header className="h-[80px] bg-white border-b border-[#E5E7EB] shrink-0 px-6 flex items-center justify-end md:justify-between sticky top-0 z-50 w-full transition-all">
-           {/* Custom Logo Component on Navbar */}
-           <div className="hidden md:flex items-center gap-3 ml-2">
-             <img src="/favicon.png" alt="AsthmaGuard Icon" className="w-9 h-9 object-contain" />
-             <div className="flex flex-col justify-center">
-               <h1 className="text-[20px] font-bold text-[#044E45] leading-none tracking-tight">AsthmaGuard</h1>
-               <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Breathe easy. Stay protected.</p>
-             </div>
-           </div>
+          {/* Logo */}
+          <div className="hidden md:flex items-center gap-3 ml-2">
+            <img src="/favicon.png" alt="AsthmaGuard Icon" className="w-9 h-9 object-contain" />
+            <div className="flex flex-col justify-center">
+              <h1 className="text-[20px] font-bold text-[#044E45] leading-none tracking-tight">AsthmaGuard</h1>
+              <p className="text-[11px] text-slate-500 font-medium leading-tight mt-0.5">Breathe easy. Stay protected.</p>
+            </div>
+          </div>
 
-           <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3">
+            <NotificationPopover />
 
-             
-             <NotificationPopover />
-             
-             {/* Mobile User Avatar in top right */}
-             <div className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden border-2 border-white shadow-sm md:hidden ml-2 cursor-pointer" onClick={() => navigate('/profile')}>
-                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M50 20C30 20 20 40 25 65C30 90 70 90 75 65C80 40 70 20 50 20Z" fill="#2E1A11"/>
-                  <circle cx="50" cy="55" r="22" fill="#FCE7D9"/>
-                </svg>
-             </div>
-           </div>
+            {/* Mobile User Avatar */}
+            <div
+              className="w-10 h-10 rounded-full bg-[#E5BDBA] overflow-hidden border-2 border-white shadow-sm md:hidden ml-2 cursor-pointer"
+              onClick={() => navigate('/profile')}
+            >
+              <UserAvatar name={user?.name} />
+            </div>
+          </div>
         </header>
 
         {/* Scrollable Page Content */}
         <main className="flex-1 overflow-y-auto pb-20 md:pb-6 relative w-full h-full p-4 md:p-8">
-           {children}
+          {children}
         </main>
 
         <BottomNav />

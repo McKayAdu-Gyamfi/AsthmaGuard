@@ -3,6 +3,23 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+const AVATAR_OPTIONS = [
+  { seed: 'Alex',     color: '#5B8FF9' },
+  { seed: 'Cathy',    color: '#E96D6D' },
+  { seed: 'Chelsea',  color: '#F4A261' },
+  { seed: 'Enrique',  color: '#2A9D8F' },
+  { seed: 'Felix',    color: '#6A4C93' },
+  { seed: 'Harry',    color: '#264653' },
+  { seed: 'Maria',    color: '#E76F51' },
+  { seed: 'Samantha', color: '#457B9D' },
+  { seed: 'Sophia',   color: '#A8DADC' },
+  { seed: 'Stu',      color: '#8ecae6' },
+  { seed: 'Torsten',  color: '#1D3557' },
+  { seed: 'Iggy',     color: '#0A5D64' },
+];
+
+const PREDEFINED_SEEDS = AVATAR_OPTIONS.map((a) => a.seed);
+const seedColor = (seed: string) => AVATAR_OPTIONS.find((a) => a.seed === seed)?.color ?? '#0A5D64';
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -11,6 +28,7 @@ const Signup = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [severity, setSeverity] = useState('');
+  const [avatarSeed, setAvatarSeed] = useState(PREDEFINED_SEEDS[0]);
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -22,12 +40,14 @@ const Signup = () => {
       const res = await fetch('/api/auth/sign-up/email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password, image: avatarSeed })
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.message || 'Signup failed. Please try again.');
       } else {
+        // Save severity locally since better-auth doesn't natively support it on user model without custom fields
+        if (severity) localStorage.setItem('asthma_severity', severity);
         // Automatically route to dashboard after successful signup
         window.location.href = '/';
       }
@@ -90,6 +110,35 @@ const Signup = () => {
 
         {/* Signup Form */}
         <div className="w-full space-y-4">
+          
+          {/* Avatar Selection */}
+          <div className="space-y-3 mb-6">
+            <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1 block">
+              CHOOSE YOUR AVATAR
+            </label>
+            <div className="grid grid-cols-4 gap-3 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
+              {PREDEFINED_SEEDS.map((seed) => (
+                <button
+                  key={seed}
+                  type="button"
+                  onClick={() => setAvatarSeed(seed)}
+                  className={`relative aspect-square rounded-xl overflow-hidden transition-all duration-200 ${
+                    avatarSeed === seed
+                      ? 'ring-4 ring-[#2F5E60] ring-offset-2 scale-105 z-10'
+                      : 'hover:scale-105 hover:shadow-md'
+                  }`}
+                >
+                  <div
+                    className="w-full h-full flex items-center justify-center text-white text-[14px] font-bold"
+                    style={{ background: seedColor(seed) }}
+                  >
+                    {seed.slice(0, 2).toUpperCase()}
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="space-y-1.5">
             <label className="text-[12px] font-bold tracking-wider uppercase text-slate-600 ml-1">
               FULL NAME

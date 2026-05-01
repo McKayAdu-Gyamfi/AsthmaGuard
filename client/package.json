@@ -15,6 +15,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "autoprefixer": "^10.4.27",
+    "playwright": "^1.59.1",
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.2",
     "typescript": "~5.9.3",
@@ -28,6 +29,7 @@
     "lucide-react": "^1.7.0",
     "react-router-dom": "^7.13.1",
     "tailwind-merge": "^3.5.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "tyger-avatar": "^2.3.7"
   }
 }

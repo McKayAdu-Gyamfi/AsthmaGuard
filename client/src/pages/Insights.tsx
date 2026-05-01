@@ -21,9 +21,7 @@ const Insights = () => {
     <div className="min-h-screen bg-[#F6F8F9] flex flex-col relative pb-24">
       {/* Top Header */}
       <div className="flex items-center justify-between px-6 pt-8 pb-4">
-        <button className="p-2 -ml-2" onClick={() => navigate(-1)}>
-          <ArrowLeft className="w-5 h-5 text-slate-800" />
-        </button>
+        <div className="w-9 h-9" />
         <h1 className="text-[20px] font-bold text-slate-900 absolute left-1/2 -translate-x-1/2">
           Environmental Insights
         </h1>
