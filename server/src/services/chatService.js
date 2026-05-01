@@ -1,7 +1,5 @@
 import Groq from "groq-sdk";
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-
 const ASTHMA_DOCTOR_SYSTEM_PROMPT = `You are an empathetic and knowledgeable Asthma Support Doctor. Your role is to:
 
 1. Provide medical guidance and support to asthma patients and their caregivers
@@ -31,8 +29,11 @@ IMPORTANT: If a user mentions they are having severe breathing difficulty, chest
 export const getChatResponse = async (messages) => {
   try {
     if (!process.env.GROQ_API_KEY) {
+      console.warn("⚠️ GROQ_API_KEY is missing. Using mock response.");
       return getMockResponse(messages);
     }
+
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     // Convert messages to Groq's format
     const formattedMessages = messages.map((msg) => ({
@@ -41,7 +42,7 @@ export const getChatResponse = async (messages) => {
     }));
 
     const completion = await groq.chat.completions.create({
-      model: "llama3-8b-8192",
+      model: "llama-3.3-70b-versatile",
       messages: [
         { role: "system", content: ASTHMA_DOCTOR_SYSTEM_PROMPT },
         ...formattedMessages,
@@ -78,3 +79,5 @@ function getMockResponse(messages) {
 
   return "I understand. Managing asthma can be challenging, but tracking your symptoms and avoiding triggers makes a huge difference. Can you tell me a little more about how you're feeling right now?";
 }
+
+export default { getChatResponse };

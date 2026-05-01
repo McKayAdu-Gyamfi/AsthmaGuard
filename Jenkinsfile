@@ -70,7 +70,8 @@ pipeline {
                         'BETTER_AUTH_SECRET=ci-test-secret',
                         'BETTER_AUTH_URL=http://localhost:4000',
                         'SUPABASE_URL=https://uewfaexbptgjpukrvypt.supabase.co',
-                        'SUPABASE_KEY=sb_publishable_placeholder'
+                        'SUPABASE_KEY=sb_publishable_placeholder',
+                        'GROQ_API_KEY=gsk_placeholder'
                     ]) {
                         sh 'npm run test:run'
                     }
