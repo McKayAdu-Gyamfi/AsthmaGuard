@@ -20,8 +20,11 @@ app.use(cors({
 
 // Better Auth integration - Using a custom middleware to ensure raw stream access
 // and avoid Express path-stripping issues.
-app.all("/api/auth/*", (req, res) => {
-  return toNodeHandler(auth)(req, res);
+app.use((req, res, next) => {
+  if (req.path.startsWith("/api/auth")) {
+    return toNodeHandler(auth)(req, res);
+  }
+  next();
 });
 
 // JSON parser for all other routes
